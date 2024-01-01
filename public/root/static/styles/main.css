@@ -1,0 +1,265 @@
+:root {
+    --black: #111;
+    user-select: none;
+}
+
+body {
+    background: #101014;
+    color: aliceblue;
+    margin: 0 0 0 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+}
+
+.hidden {
+    display: none !important;
+    animation-play-state: paused !important;
+}
+
+.rotated {
+    transform: rotate(180deg);
+}
+
+a {
+    text-decoration: none;
+    color: hsl(344, 60%, 60%);
+}
+
+a:hover {
+    color: hsl(343, 60%, 50%);
+}
+
+nav {
+    margin: 0;
+    width: 100%;
+    transform: translateY(0);
+    transition: transform 0.3s ease;
+    border-bottom: 1px solid black;
+    box-sizing: border-box;
+}
+
+nav>div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: auto;
+    width: 100%;
+    max-width: 1240px;
+    padding: 1.25rem;
+    box-sizing: border-box;
+}
+
+nav .flexstart {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 40px;
+    transition: all 250ms linear;
+}
+
+nav .flexend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1.25rem;
+    position: relative;
+}
+
+nav .logo {
+    font-size: 2rem;
+}
+
+nav #user {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 2.5px 6px;
+    border-radius: 6px;
+    color: aliceblue;
+}
+
+nav #user:hover {
+    background-color: #ffffff10;
+}
+
+nav #user img {
+    border-radius: 100%;
+}
+
+nav #user span {
+    padding-left: 0.5rem;
+}
+
+nav #user svg {
+    margin-left: 0.25rem;
+}
+
+nav .popout {
+    padding: 0.5rem;
+    position: absolute;
+    background: #080809;
+    top: 2.5rem;
+    right: 0;
+    width: 180px;
+    text-align: center;
+    border-radius: 6px;
+    box-sizing: content-box;
+}
+
+nav .popout #logout, nav .popout a {
+    color: #d8d8d9 !important;
+    font-size: .875rem !important;
+    line-height: 1.25rem !important;
+    padding: 0.5rem 0.75rem;
+    position: relative !important;
+    display: block;
+}
+
+nav .popout a:hover {
+    cursor: pointer;
+    color: aliceblue !important;
+    background-color: #ffffff10;
+}
+
+nav .popout #logout:hover {
+    cursor: pointer;
+    color: aliceblue !important;
+    background-color: #ff000010;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+
+::-webkit-scrollbar-track {
+    background: #111;
+    padding: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #444;
+    border: none;
+    border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.notification-bar {
+    padding: 10px 5%;
+    color: hsl(344, 60%, 70%);
+    background: #1a1a1a;
+    position: sticky;
+    box-sizing: border-box;
+    display: none;
+    font-size: 14px;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.notfound {
+    text-align: center;
+}
+
+.notfound h1 {
+    font-size: 8rem;
+    margin-bottom: 1rem;
+}
+
+#content.container {
+    box-sizing: border-box;
+}
+
+@media screen and (max-width: 850px) {
+    nav .flexstart {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 20px;
+    }
+}
+
+#loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #101014;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999999999999999;
+}
+
+.lds-ellipsis {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.lds-ellipsis div {
+    position: absolute;
+    top: 33px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: hsl(344, 60%, 60%);
+    animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.lds-ellipsis div:nth-child(1) {
+    left: 8px;
+    animation: lds-ellipsis1 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(2) {
+    left: 8px;
+    animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(3) {
+    left: 32px;
+    animation: lds-ellipsis2 0.6s infinite;
+}
+
+.lds-ellipsis div:nth-child(4) {
+    left: 56px;
+    animation: lds-ellipsis3 0.6s infinite;
+}
+
+@keyframes lds-ellipsis1 {
+    0% {
+        transform: scale(0);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes lds-ellipsis3 {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(0);
+    }
+}
+
+@keyframes lds-ellipsis2 {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(24px, 0);
+    }
+}
