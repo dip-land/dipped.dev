@@ -1,6 +1,6 @@
 {
   "name": "dip-land",
-  "version": "1.0.1",
+  "version": "1.0.1b",
   "type": "module",
   "main": "./dist/index.js",
   "license": "ISC",

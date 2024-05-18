@@ -11,12 +11,17 @@ export class Client extends DjsClient {
     public readonly prefixCommands: Collection<string, Command> = new Collection();
     public readonly slashCommands: Collection<string, Command> = new Collection();
 
-    public readonly consoleColor = { main: '255;212;243m' }[this.version];
+    public readonly consoleColor = '\x1b[38;2;' + { main: '255;212;243m' }[this.version];
     public readonly embedColor = { main: 0xffd4f3 }[this.version];
     public readonly rgbColor = { main: '255,212,243' }[this.version];
 
+    private name;
+    private color;
+
     constructor(options: ClientOptions) {
         super(options);
+        this.name = `Emoji Eater ${this.version}`;
+        this.color = this.consoleColor;
     }
 
     public logger = new Logger(`Emoji Eater ${this.version}`, this.consoleColor);

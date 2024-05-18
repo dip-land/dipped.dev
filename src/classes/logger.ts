@@ -8,7 +8,6 @@ export default class Logger {
     constructor(name: string, color: string) {
         this.name = name;
         this.color = '\x1b[38;2;' + color;
-        console.log(name, color);
     }
     /**Console logs data with a blue time code */
     public log(...message: any) {
