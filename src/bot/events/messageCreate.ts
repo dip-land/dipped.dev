@@ -4,6 +4,7 @@ import prefixCommand from '../handlers/prefixCommand.js';
 
 export default new Event({
     name: 'messageCreate',
+    on: true,
     async fn(message: Message<boolean>) {
         if (message.author.bot || message.author.system) return;
 

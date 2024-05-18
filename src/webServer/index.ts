@@ -8,10 +8,10 @@ const logger = new Logger();
 
 const fastify = Fastify({ logger: false, ignoreTrailingSlash: true });
 fastify.register(fastifyStatic, {
-    root: path.join(process.cwd(), 'public/root/static/'),
+    root: path.join(process.cwd(), 'public/static/'),
     prefix: '/static/', // optional: default '/'
 });
-fastify.register(fastifyFavicon, { path: path.join(process.cwd(), 'public/root/static/icons/'), name: 'favicon.ico', maxAge: 3600 });
+fastify.register(fastifyFavicon, { path: path.join(process.cwd(), 'public/static/icons/'), name: 'favicon.ico', maxAge: 3600 });
 fastify.register((await import('./database.js')).default);
 fastify.setNotFoundHandler({ preValidation: (req, res, done) => done(), preHandler: (req, res, done) => done() }, async function (req, res) {
     constructPage(res, {
@@ -20,9 +20,9 @@ fastify.setNotFoundHandler({ preValidation: (req, res, done) => done(), preHandl
             title: 'Page Not Found - DipLand',
             description: 'Error 404, Page Not Found.',
             image: '/static/icons/favicon.png',
-            files: ['public/root/head.html'],
+            files: ['public/head.html'],
         },
-        body: { files: ['public/root/nav.html', 'public/root/404.html'] },
+        body: { files: ['public/nav.html', 'public/404.html'] },
     });
     return res;
 });
@@ -34,9 +34,9 @@ fastify.get('/', async (req, res) => {
             title: 'DipLand',
             description: 'Home.',
             image: '/static/icons/favicon.png',
-            files: ['public/root/head.html'],
+            files: ['public/head.html'],
         },
-        body: { files: ['public/root/nav.html', 'public/root/home.html'] },
+        body: { files: ['public/nav.html', 'public/home.html'] },
     });
     return res;
 });

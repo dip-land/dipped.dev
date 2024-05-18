@@ -3,6 +3,7 @@ import { glob } from 'glob';
 import type { Event } from './Event.js';
 import { type Command } from './Command.js';
 import 'dotenv/config';
+import Logger from '../../classes/logger.js';
 
 export class Client extends DjsClient {
     public readonly version = 'main';
@@ -10,13 +11,19 @@ export class Client extends DjsClient {
     public readonly prefixCommands: Collection<string, Command> = new Collection();
     public readonly slashCommands: Collection<string, Command> = new Collection();
 
-    public readonly consoleColor = '\x1b[38;2;' + { main: '255;212;243m' }[this.version];
+    public readonly consoleColor = { main: '255;212;243m' }[this.version];
     public readonly embedColor = { main: 0xffd4f3 }[this.version];
     public readonly rgbColor = { main: '255,212,243' }[this.version];
 
     constructor(options: ClientOptions) {
         super(options);
     }
+
+    public logger = new Logger(`Emoji Eater ${this.version}`, this.consoleColor);
+    /**Console logs data with a blue time code */
+    public log = this.logger.log;
+    /**Console logs data with a red time code */
+    public error = this.logger.error;
 
     public isBotOwner(member: any): boolean {
         return member.id === '251580400097427456';
@@ -26,8 +33,8 @@ export class Client extends DjsClient {
         for (const eventPath of (await glob('./dist/bot/events/**/*.js', { platform: 'linux' })).toString().replaceAll('dist/bot', '..').split(',')) {
             try {
                 const event: Event = (await import(eventPath)).default;
-                if (event.on) this.on(event.name, (...args) => event.fn(...args));
-                else this.once(event.name, (...args) => event.fn(...args));
+                if (!event.on) this.once(event.name, (...args) => event.fn(...args));
+                else this.on(event.name, (...args) => event.fn(...args));
             } catch (err: Error | unknown) {
                 this.error(eventPath, err);
             }
@@ -55,16 +62,5 @@ export class Client extends DjsClient {
         }
         this.log('Commands Registered.');
         return this;
-    }
-    private timeCode(type?: 'error'): string {
-        return `\x1b[${type === 'error' ? '31m' : '36m'}${new Date().toLocaleString()} ${this.consoleColor}[DiscordBot]\x1b[0m`;
-    }
-    /**Console logs data with a blue time code */
-    public log(...message: any) {
-        console.log(this.timeCode(), ...message);
-    }
-    /**Console logs data with a red time code */
-    public error(...message: any) {
-        console.log(this.timeCode('error'), ...message);
     }
 }

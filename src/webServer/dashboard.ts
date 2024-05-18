@@ -13,9 +13,38 @@ async function routes(fastify: FastifyInstance, options: any) {
                 title: 'Dashboard - DipLand',
                 description: 'Server Dashboard.',
                 image: '/static/icons/favicon.png',
-                files: ['public/root/head.html', 'public/root/dashboard/head.html'],
+                files: ['public/head.html', 'public/dashboard/head.html'],
             },
-            body: { files: ['public/root/nav.html', 'public/root/dashboard/index.html'] },
+            body: { files: ['public/nav.html', 'public/dashboard/index.html'] },
+        });
+        return res;
+    });
+    fastify.get('/dashboard/me', async (req, res) => {
+        constructPage(res, {
+            language: 'en-US',
+            head: {
+                title: 'Dashboard - DipLand',
+                description: 'Server Dashboard.',
+                image: '/static/icons/favicon.png',
+                files: ['public/head.html', 'public/dashboard/head.html'],
+            },
+            body: { files: ['public/nav.html', 'public/dashboard/index.html'] },
+        });
+        return res;
+    });
+    fastify.get('/dashboard/servers/', async (req, res) => {
+        res.redirect(303, '/dashboard/');
+    });
+    fastify.get('/dashboard/servers/:serverID', async (req, res) => {
+        constructPage(res, {
+            language: 'en-US',
+            head: {
+                title: 'Dashboard - DipLand',
+                description: 'Server Dashboard.',
+                image: '/static/icons/favicon.png',
+                files: ['public/head.html', 'public/dashboard/head.html'],
+            },
+            body: { files: ['public/nav.html', 'public/dashboard/index.html'] },
         });
         return res;
     });

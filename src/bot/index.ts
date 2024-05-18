@@ -12,13 +12,13 @@ client.once('ready', async () => {
     client.log(`Online`);
     client.user?.setPresence({ activities: [{ name: 'Playing with roles', type: ActivityType.Custom }], status: 'online' });
     await client.registerEvents();
-    await client.registerCommands(['global', '1110754252315435070', '1182260148501225552']);
+    await client.registerCommands(['global', '1182260148501225552']);
 });
 
-process.on('message', (message: { type: string; status: string; name?: string; color?: string; user?: string; guild?: string; role?: string }) => {
-    if (message.type === 'role') {
-        role.webTrigger!(message, client);
-    }
-});
+// process.on('message', (message: { type: string; status: string; name?: string; color?: string; user?: string; guild?: string; role?: string }) => {
+//     if (message.type === 'role') {
+//         role.webTrigger!(message, client);
+//     }
+// });
 
 client.login(process.env.TOKEN);

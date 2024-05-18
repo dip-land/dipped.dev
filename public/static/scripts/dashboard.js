@@ -1,8 +1,11 @@
 window.addEventListener('load', async () => {
     try {
         const cj = colorjoe.rgb(document.getElementById('colorJoe'));
-        cj.show();
-        cj.on('done', (color) => console.log('Selected ' + color.css()));
+        if (cj) {
+            cj.show();
+            cj.on('done', (color) => console.log('Selected ' + color.css()));
+        }
+
         const accessToken = window.localStorage.getItem('access_token');
         const tokenType = window.localStorage.getItem('token_type');
         const container = document.getElementById('guilds');
@@ -11,7 +14,7 @@ window.addEventListener('load', async () => {
             const botGuilds = await (await fetch('/api/dashboard/servers/list')).json();
             for (const guild of guilds) {
                 if (!botGuilds.includes(guild.id)) continue;
-                const guildDiv = Object.assign(document.createElement('a'), { id: `${guild.id}`, classList: 'guild' });
+                const guildDiv = Object.assign(document.createElement('a'), { id: `${guild.id}`, classList: 'guild', href: `/dashboard/servers/${guild.id}` });
                 const guildContent = Object.assign(document.createElement('div'), { id: `guildContent` });
                 const guildBackground = Object.assign(document.createElement('div'), { id: `guildBackground` });
                 guildBackground.style.backgroundImage = `url("https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png")`;

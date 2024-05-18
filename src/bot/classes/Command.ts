@@ -23,15 +23,11 @@ export class Command {
     public cooldown = 2_000;
     public category = '';
     public disabled = false;
+    public hidden = false;
     public deferReply = false;
     public permissions?: Array<PermissionResolvable> = [];
     public prefixCommand?: (data: { message: Message; args: Array<string>; client: Client }) => Promise<unknown>;
-    public slashCommand?: (data: {
-        interaction: ChatInputCommandInteraction;
-        hidden: boolean;
-        options: ChatInputCommandInteraction['options'];
-        client: Client;
-    }) => Promise<unknown>;
+    public slashCommand?: (data: { interaction: ChatInputCommandInteraction; options: ChatInputCommandInteraction['options']; client: Client }) => Promise<unknown>;
     public button?: (interaction: ButtonInteraction) => Promise<unknown>;
     public selectMenu?: (interaction: AnySelectMenuInteraction) => Promise<unknown>;
     public modal?: (interaction: Message, fields: Collection<string, TextInputComponent>) => Promise<unknown>;
@@ -89,10 +85,11 @@ interface CommandData {
     cooldown?: number;
     category: string;
     disabled?: boolean;
+    hidden?: boolean;
     deferReply?: boolean;
     permissions?: Array<PermissionResolvable>;
     prefixCommand?: (data: { message: Message; args: Array<string>; client: Client }) => Promise<unknown>;
-    slashCommand?: (data: { interaction: ChatInputCommandInteraction; hidden: boolean; options: ChatInputCommandInteraction['options']; client: Client }) => Promise<unknown>;
+    slashCommand?: (data: { interaction: ChatInputCommandInteraction; options: ChatInputCommandInteraction['options']; client: Client }) => Promise<unknown>;
     button?: (interaction: ButtonInteraction) => Promise<unknown>;
     selectMenu?: (interaction: AnySelectMenuInteraction) => Promise<unknown>;
     modal?: (interaction: Message, fields: Collection<string, TextInputComponent>) => Promise<unknown>;

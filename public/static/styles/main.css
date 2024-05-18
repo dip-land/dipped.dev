@@ -37,6 +37,8 @@ nav {
     transition: transform 0.3s ease;
     border-bottom: 1px solid black;
     box-sizing: border-box;
+    position: relative;
+    z-index: 1;
 }
 
 nav>div {
@@ -173,6 +175,8 @@ nav .popout #logout:hover {
 
 #content.container {
     box-sizing: border-box;
+    z-index: 0;
+    position: relative;
 }
 
 @media screen and (max-width: 850px) {
