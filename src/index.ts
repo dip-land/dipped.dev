@@ -60,7 +60,6 @@ const fastify = Fastify({ logger: false, ignoreTrailingSlash: true });
 fastify.register(fastifyStatic, { root: path.join(process.cwd(), 'public/static/'), prefix: '/static/' });
 fastify.register(fastifyStatic, { root: path.join(process.cwd(), 'public/r2modman/'), prefix: '/r2modman/', decorateReply: false });
 fastify.register(fastifyFavicon, { path: path.join(process.cwd(), 'public/static/icons/'), name: 'favicon.ico', maxAge: 3600 });
-fastify.register((await import('./database.js')).default);
 fastify.setNotFoundHandler({ preValidation: (req, res, done) => done(), preHandler: (req, res, done) => done() }, async function (req, res) {
     constructPage(res, {
         language: 'en-US',
