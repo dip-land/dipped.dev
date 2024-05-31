@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import fs from 'node:fs';
 import path from 'node:path';
 import mc from 'minecraftstatuspinger';
-import { getGuildInfo, getAllUsers, getUser } from './handlers/database.js';
+import { getGuildInfo, getAllUsers, getUser } from '../handlers/database.js';
 
 async function routes(fastify: FastifyInstance, options: any) {
     fastify.get('/minecraft/servers', async (req, reply) => {

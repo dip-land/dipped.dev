@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { constructPage, statusPage } from './constants.js';
+import { constructPage, statusPage } from '../constants.js';
 import fs from 'node:fs';
 import path from 'node:path';
 

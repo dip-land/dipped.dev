@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { constructPage } from './constants.js';
+import { constructPage } from '../constants.js';
 
 async function routes(fastify: FastifyInstance, options: any) {
     fastify.all('/', (req, reply) => {

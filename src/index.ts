@@ -82,10 +82,10 @@ fastify.all('/', (req, reply) => {
     return reply;
 });
 
-fastify.register((await import('./api.js')).default, { prefix: '/api' });
-fastify.register((await import('./minecraft.js')).default, { prefix: '/minecraft' });
-fastify.register((await import('./projects.js')).default, { prefix: '/projects' });
-fastify.register((await import('./dashboard.js')).default, { prefix: '/role-eater/dashboard' });
+fastify.register((await import('./routes/api.js')).default, { prefix: '/api' });
+fastify.register((await import('./routes/minecraft.js')).default, { prefix: '/minecraft' });
+fastify.register((await import('./routes/projects.js')).default, { prefix: '/projects' });
+fastify.register((await import('./routes/dashboard.js')).default, { prefix: '/role-eater/dashboard' });
 
 fastify.all('/robots.txt', (req, reply) => reply.sendFile('robots.txt', path.join(process.cwd(), 'public')));
 fastify.all('/sitemap.xml', (req, reply) => reply.sendFile('sitemap.xml', path.join(process.cwd(), 'public')));
