@@ -9,9 +9,9 @@ async function routes(fastify: FastifyInstance, options: any) {
                 title: 'Role Eater Dashboard - dipped.dev',
                 description: 'Server Dashboard.',
                 image: '/static/icons/favicon.png',
-                files: ['public/html/head.html', 'public/role-eater/dashboard/head.html'],
+                files: ['public/root/head.html', 'public/role-eater/dashboard/head.html'],
             },
-            body: { files: ['public/html/nav.html', 'public/role-eater/dashboard/index.html'] },
+            body: { files: ['public/root/nav.html', 'public/role-eater/dashboard/index.html'] },
         });
         return res;
     });
@@ -22,9 +22,9 @@ async function routes(fastify: FastifyInstance, options: any) {
                 title: 'Role Eater Dashboard - dipped.dev',
                 description: 'Server Dashboard.',
                 image: '/static/icons/favicon.png',
-                files: ['public/html/head.html', 'public/role-eater/dashboard/guildHead.html'],
+                files: ['public/root/head.html', 'public/role-eater/dashboard/guildHead.html'],
             },
-            body: { files: ['public/html/nav.html', 'public/role-eater/dashboard/guild.html'] },
+            body: { files: ['public/root/nav.html', 'public/role-eater/dashboard/guild.html'] },
         });
         return res;
     });
@@ -35,9 +35,9 @@ async function routes(fastify: FastifyInstance, options: any) {
                 title: 'Role Eater Dashboard - dipped.dev',
                 description: 'Server Dashboard.',
                 image: '/static/icons/favicon.png',
-                files: ['public/html/head.html', 'public/role-eater/dashboard/guildUserHead.html'],
+                files: ['public/root/head.html', 'public/role-eater/dashboard/guildUserHead.html'],
             },
-            body: { files: ['public/html/nav.html', 'public/role-eater/dashboard/guildUser.html'] },
+            body: { files: ['public/root/nav.html', 'public/role-eater/dashboard/guildUser.html'] },
         });
         return res;
     });

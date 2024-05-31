@@ -32,25 +32,16 @@ client.once('ready', async () => {
     }
 });
 
-// process.on('message', (message: { type: string; status: string; name?: string; color?: string; user?: string; guild?: string; role?: string }) => {
-//     if (message.type === 'role') {
-//         role.webTrigger!(message, client);
-//     }
-// });
-
-// setTimeout(
-//     () =>
-//         discordBot.send({
-//             type: 'role',
-//             status: 'edit',
-//             name: 'name change test',
-//             color: '#19bd8e',
-//             user: '251580400097427456',
-//             guild: '1110754252315435070',
-//             role: '1185802936626983004', // only needs to be preset for deletions
-//         }),
-//     2000
-// );
+// might use again in the future
+// const test = {
+//     type: 'role',
+//     status: 'edit',
+//     name: 'name change test',
+//     color: '#19bd8e',
+//     user: '251580400097427456',
+//     guild: '1110754252315435070',
+//     role: '1185802936626983004', // only needs to be preset for deletions
+// };
 
 client.login(process.env.TOKEN);
 
@@ -67,17 +58,17 @@ fastify.setNotFoundHandler({ preValidation: (req, res, done) => done(), preHandl
             title: 'Page Not Found',
             description: 'Error 404, Page Not Found.',
             image: '/static/icons/favicon.png',
-            files: ['public/html/head.html'],
+            files: ['public/root/head.html'],
         },
-        body: { files: ['public/html/nav.html', 'public/html/404.html'] },
+        body: { files: ['public/root/nav.html', 'public/root/404.html'] },
     });
     return res;
 });
 fastify.all('/', (req, reply) => {
     constructPage(reply, {
         language: 'en-US',
-        head: { title: 'Home', description: '', image: '/static/icons/favicon.png', files: ['public/html/head.html'] },
-        body: { files: ['public/html/nav.html', 'public/html/index.html'] },
+        head: { title: 'Home', description: '', image: '/static/icons/favicon.png', files: ['public/root/head.html'] },
+        body: { files: ['public/root/nav.html', 'public/root/index.html'] },
     });
     return reply;
 });

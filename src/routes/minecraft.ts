@@ -1,5 +1,5 @@
 import { FastifyInstance } from 'fastify';
-import { constructPage, statusPage } from '../constants.js';
+import { constructPage } from '../constants.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -12,8 +12,8 @@ async function routes(fastify: FastifyInstance, options: any) {
     fastify.all('/', (req, reply) => {
         constructPage(reply, {
             language: 'en-US',
-            head: { title: 'Minecraft', description: '', image: '/static/icons/favicon.png', files: ['public/html/head.html'] },
-            body: { files: ['public/html/nav.html', 'public/minecraft/index.html'] },
+            head: { title: 'Minecraft', description: '', image: '/static/icons/favicon.png', files: ['public/root/head.html'] },
+            body: { files: ['public/root/nav.html', 'public/minecraft/index.html'] },
         });
         return reply;
     });
@@ -28,8 +28,8 @@ async function routes(fastify: FastifyInstance, options: any) {
                 reply,
                 {
                     language: 'en-US',
-                    head: { title: packInfo.name, description: '', image: `/minecraft/servers/${pack}/packIcon.png`, files: ['public/html/head.html'] },
-                    body: { files: ['public/html/nav.html', `public/minecraft/servers/index.html`] },
+                    head: { title: packInfo.name, description: '', image: `/minecraft/servers/${pack}/packIcon.png`, files: ['public/root/head.html'] },
+                    body: { files: ['public/root/nav.html', `public/minecraft/server.html`] },
                 },
                 async function (window, document) {
                     const packIcon = document.getElementById('pack-icon');
@@ -65,7 +65,7 @@ async function routes(fastify: FastifyInstance, options: any) {
             );
         } else {
             reply.code(404);
-            statusPage(reply, { code: 404, title: 'Not Found' });
+            //statusPage(reply, { code: 404, title: 'Not Found' });
             return reply;
         }
     });
@@ -81,7 +81,7 @@ async function routes(fastify: FastifyInstance, options: any) {
             reply.sendFile(`packIcon.${type}`, path.join(process.cwd(), 'public/minecraft/servers', IDENTIFIER));
         } else {
             reply.code(400);
-            statusPage(reply, { code: 400, title: 'Bad Request' });
+            //statusPage(reply, { code: 400, title: 'Bad Request' });
             return reply;
         }
     });

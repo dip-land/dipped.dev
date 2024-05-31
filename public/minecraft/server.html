@@ -1,0 +1,147 @@
+<style>
+    #pack-container {
+        margin: 1rem 0;
+        background-color: rgb(33, 36, 45);
+        max-width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        object-fit: contain;
+        border-radius: 10px;
+        overflow: visible;
+        transition: all ease 200ms;
+        flex-direction: column;
+        color: aliceblue;
+    }
+    #pack {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        padding: 16px;
+        margin: 0 auto;
+        box-sizing: border-box;
+        gap: 16px;
+    }
+    #pack-info {
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        max-width: 200px;
+    }
+    #pack-icon {
+        border-radius: 6px;
+        max-width: 200px;
+        min-width: 200px;
+    }
+    #pack-name {
+        margin: 0;
+    }
+
+    #server-info {
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        max-width: 300px;
+    }
+    #server-info h2 {
+        margin: 0;
+    }
+    #server-info .green {
+        color: hsl(147, 88%, 62%);
+    }
+    #server-info .red {
+        color: hsl(7, 88%, 62%);
+    }
+    #server-info .orange {
+        color: hsl(34, 88%, 62%);
+    }
+
+    #downloads {
+        margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        width: 200px;
+    }
+    #downloads a,
+    #server-info-login {
+        display: block;
+        background-color: hsl(344, 60%, 60%);
+        color: aliceblue;
+        padding: 8px 16px;
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 6px;
+    }
+    #downloads a.disabled,
+    #server-info-login:disabled {
+        display: block;
+        background-color: hsl(344, 40%, 40%);
+        color: hsl(208, 26%, 76%);
+        padding: 6px 12px;
+        width: 200px;
+        max-width: 200px;
+        pointer-events: none;
+        cursor: default;
+    }
+    #server-info-login {
+        align-self: center;
+        display: inline;
+        max-width: fit-content;
+    }
+
+    @media screen and (max-width: 850px) {
+        #pack {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+</style>
+<script id="hide">
+    document.getElementById('center').children[2].classList.add('active');
+    document.getElementById('hide').remove();
+</script>
+<script async src="/static/scripts/minecraft/servers.js"></script>
+<div id="content" class="container">
+    <div id="pack-container">
+        <div id="pack">
+            <div id="pack-info">
+                <img id="pack-icon" src="" />
+                <h2 id="pack-name"></h2>
+                <span id="pack-version"></span>
+            </div>
+            <div id="server-info">
+                <h2>Server Info</h2>
+                <div id="status-container">
+                    <b>Status: </b>
+                    <span id="status">Loading...</span>
+                </div>
+                <div id="player-container">
+                    <b>Players: </b>
+                    <span id="players">Loading...</span>
+                </div>
+                <div id="ip-container">
+                    <b>IP: </b>
+                    <span id="server-ip" class="tooltip">Loading...</span>
+                </div>
+                <div id="dates">
+                    <b>Start Date: </b>
+                    <span id="server-start"></span>
+                    <br />
+                    <b>End Date: </b>
+                    <span id="server-end"></span>
+                </div>
+            </div>
+
+            <div id="downloads">
+                <a id="pack-download" href="" style="margin-bottom: 16px">Download Modpack</a>
+                <a id="download" href="">Download World File</a>
+            </div>
+        </div>
+
+        <div id="how-to">
+            <h2></h2>
+        </div>
+    </div>
+</div>
