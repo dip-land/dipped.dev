@@ -5,3 +5,4 @@ node_modules/
 public/r2modman
 public/minecraft/servers
 public/static/styles/**/*.css
+public/static/styles/**/*.css.map
