@@ -1,0 +1,208 @@
+<style>
+    #filter {
+        padding: 1rem 0;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    #filter input,
+    #filter select {
+        display: inline;
+        background-color: rgb(33, 36, 45);
+        color: white;
+        padding: 8px 16px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        height: 33px;
+    }
+
+    #filter input:hover,
+    #filter select:hover {
+        background-color: rgb(45, 49, 60);
+    }
+
+    #filter select {
+        padding: 8px 0px 8px 16px;
+        border-right: 16px solid transparent;
+    }
+
+    #filter input[type='submit'],
+    #filter #reset {
+        align-self: flex-end;
+    }
+
+    .server {
+        background-color: rgb(33, 36, 45);
+        max-width: 100%;
+        min-width: 193px;
+        height: 193px;
+        max-height: 193px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        object-fit: contain;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all ease 200ms;
+        flex-direction: column;
+        color: white;
+        position: relative;
+    }
+
+    .server:hover {
+        background-color: rgb(45, 49, 60);
+    }
+
+    .server img {
+        width: 193px;
+        height: 193px;
+        vertical-align: middle;
+        object-fit: contain;
+        border-radius: 8px;
+        aspect-ratio: 1 / 1;
+    }
+
+    .server span {
+        padding: 6px 12px;
+        font-weight: 600;
+        position: absolute;
+        top: 193px;
+        left: 0;
+        right: 0;
+        bottom: -100px;
+        backdrop-filter: blur(10px);
+        text-shadow: 1px 1px 3px black;
+        transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .server:hover span {
+        bottom: 0;
+        top: 0;
+        color: white !important;
+    }
+
+    #servers {
+        display: grid;
+        gap: 1rem;
+        padding: 0 0 1rem;
+    }
+
+    @media screen and (min-width: 2669px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 2669px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 2453px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 2237px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 2021px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 1805px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 1589px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 1313px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 1163px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 941px) {
+        #servers {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+    }
+
+    @media screen and (max-width: 705px) {
+        #servers {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .server {
+            max-width: 100%;
+            min-width: 180px;
+            height: 180px;
+        }
+
+        .server img {
+            height: 120px;
+            width: 120px;
+        }
+    }
+
+    @media screen and (max-width: 405px) {
+        #servers {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+<script id="hide">
+    document.getElementById('center').children[2].classList.add('active');
+    document.getElementById('hide').remove();
+</script>
+<script async src="/static/scripts/minecraft/home.js"></script>
+<div id="content" class="container">
+    <div class="statusPage" id="auth-container">
+        <h1 id="auth">Loading...</h1>
+        <a class="login hidden" target="popup" id="auth-login"> Login with Discord </a>
+    </div>
+    <form action="/minecraft" id="filter">
+        <select name="sort" id="sort">
+            <option value="asc" disabled selected>Select Sort</option>
+            <option value="asc">Name A-Z</option>
+            <option value="desc">Name Z-A</option>
+        </select>
+        <select name="status" id="status">
+            <option value="all" disabled selected>Select Status</option>
+            <option value="all">Any</option>
+            <option value="current">Current</option>
+            <option value="archived">Archived</option>
+        </select>
+        <input type="submit" value="Filter" />
+        <input type="reset" value="Reset" id="reset" />
+    </form>
+    <div id="servers-count"></div>
+    <div id="servers"></div>
+</div>
