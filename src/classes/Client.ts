@@ -6,25 +6,24 @@ import 'dotenv/config';
 import Logger from './logger.js';
 
 export class Client extends DjsClient {
-    public readonly version = 'main';
     public readonly cooldowns: Collection<string, Collection<string, number>> = new Collection();
     public readonly prefixCommands: Collection<string, Command> = new Collection();
     public readonly slashCommands: Collection<string, Command> = new Collection();
 
-    public readonly consoleColor = '\x1b[38;2;' + { main: '255;212;243m' }[this.version];
-    public readonly embedColor = { main: 0xffd4f3 }[this.version];
-    public readonly rgbColor = { main: '255,212,243' }[this.version];
+    public readonly consoleColor = '\x1b[38;2;255;212;243m';
+    public readonly embedColor = 0xffd4f3;
+    public readonly rgbColor = '255,212,243';
 
     private name;
     private color;
 
     constructor(options: ClientOptions) {
         super(options);
-        this.name = `Emoji Eater ${this.version}`;
+        this.name = `Emoji Eater`;
         this.color = this.consoleColor;
     }
 
-    public logger = new Logger(`Emoji Eater ${this.version}`, this.consoleColor);
+    public logger = new Logger(`Emoji Eater`, this.consoleColor);
     /**Console logs data with a blue time code */
     public log = this.logger.log;
     /**Console logs data with a red time code */
