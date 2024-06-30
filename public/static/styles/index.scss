@@ -1,5 +1,9 @@
 :root {
     --background: rgb(15, 18, 26);
+    --background-2: rgb(25, 28, 36);
+    --background-3: rgb(33, 36, 45);
+    --background-4: rgb(45, 49, 60);
+    scrollbar-color: var(--background-3) var(--background);
 }
 
 html {
@@ -26,6 +30,14 @@ html {
 }
 
 @media screen and (max-width: 824px) {
+    #username {
+        display: none;
+    }
+
+    #caret {
+        margin: auto auto auto -3px !important;
+    }
+
     body {
         font-size: smaller !important;
     }
@@ -74,7 +86,7 @@ a:hover {
 nav {
     align-items: center;
     padding: 16px 0;
-    border-bottom: 1px solid rgb(33, 36, 45);
+    border-bottom: 1px solid var(--background-3);
     width: 100%;
     display: flex;
     color: rgb(138, 145, 165);
@@ -121,7 +133,7 @@ nav {
 
             &:hover,
             .active {
-                background-color: rgb(33, 36, 45);
+                background-color: var(--background-3);
                 color: rgb(255, 255, 255);
             }
         }
@@ -141,7 +153,7 @@ nav {
         color: white;
 
         &:hover {
-            background-color: rgb(33, 36, 45);
+            background-color: var(--background-3);
         }
 
         img {
@@ -159,9 +171,11 @@ nav {
     }
 
     .popout {
+        display: flex;
+        flex-direction: column;
         padding: 0.5rem;
         position: absolute;
-        background: rgb(33, 36, 45);
+        background: var(--background-3);
         top: 3.1rem;
         right: 0;
         text-align: center;

@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { constructPage } from '../constants.js';
 
-async function routes(fastify: FastifyInstance, options: any) {
+async function routes(fastify: FastifyInstance) {
     fastify.all('/', (req, reply) => {
         constructPage(reply, {
             language: 'en-US',

@@ -1,7 +1,6 @@
 import { ApplicationCommandOptionType, GuildMember } from 'discord.js';
 import { Command } from '../../classes/Command.js';
 import { getUser, editUser } from '../../handlers/database.js';
-import { WithId } from 'mongodb';
 
 export default new Command({
     name: 'role',
@@ -36,7 +35,7 @@ export default new Command({
             description: 'Deletes your custom role if you have one.',
         },
     ],
-    async slashCommand({ interaction, options, client }) {
+    async slashCommand({ interaction, options }) {
         const name = options.getString('name') as string;
         const color = ('#' + options.getString('color')?.replaceAll('#', '')) as `#${string}`;
         switch (options.data[0].name) {
@@ -54,7 +53,8 @@ export default new Command({
                     });
                 break;
             case 'edit':
-                const setData = name ? { 'role.name': name, 'role.color': color } : { 'role.color': color };
+                const setData =
+                    name && options.getString('color') ? { 'role.name': name, 'role.color': color } : name ? { 'role.name': name } : { 'role.name': name, 'role.color': color };
                 editUser(interaction.guildId as string, interaction.member?.user.id as string, setData).then(async (document) => {
                     if (!document) return;
                     if (!document!.role?.id) return interaction.editReply('You have not created a role with this bot use `/role create` instead.');
@@ -62,9 +62,8 @@ export default new Command({
                         .fetch(document!.role.id)
                         .then((role) => {
                             if (!role) return interaction.editReply('Role missing.');
-                            role.setName(document!.name);
-                            role.setColor(color);
-                            role.setPosition(interaction.guild!.roles.highest.position - 1);
+                            if (name) role.setName(name);
+                            if (options.getString('color')) role.setColor(color);
                             interaction.editReply('Role updated!');
                         })
                         .catch((e) => {

@@ -18,19 +18,14 @@ window.addEventListener('load', async () => {
     if (!accessToken) {
         if (document.getElementById('server-info')) document.getElementById('server-info').innerHTML = 'You must be logged in to see the server info.\n<a class="login" id="server-info-login">Login</a>';
         loginButtons = document.getElementsByClassName('login');
-        const discordOAuth = 'https://discord.com/oauth2/authorize?client_id=1217936542161436875&response_type=token&redirect_uri=';
-        //localhost link
-        if (window.origin !== 'https://dipped.dev') {
+        const discordOAuth = 'https://discord.com/oauth2/authorize?client_id=1169815792142000228&response_type=token&redirect_uri=';
+        const scopes = ['identify', 'guilds'];
+        for (const origin of ['http://localhost:8011', 'https://dipped.dev']) {
+            if (origin !== window.location.origin) continue;
             for (const btn of loginButtons) {
-                btn.setAttribute('href', `${discordOAuth}http%3A%2F%2Flocalhost%3A8011&scope=identify+guilds`);
-                btn.setAttribute('onclick', `window.open('${discordOAuth}http%3A%2F%2Flocalhost%3A8011&scope=identify+guilds','popup','width=500,height=720'); return false;`);
+                btn.setAttribute('href', `${discordOAuth}${encodeURIComponent(origin)}&scope=${scopes.join('+')}`);
+                btn.setAttribute('onclick', `window.open('${discordOAuth}${encodeURIComponent(origin)}&scope=${scopes.join('+')}','popup','width=500,height=720'); return false;`);
             }
-            return;
-        }
-        //main origin link
-        for (const btn of loginButtons) {
-            btn.setAttribute('href', `${discordOAuth}https%3A%2F%2Fdipped.dev&scope=identify+guilds`);
-            btn.setAttribute('onclick', `window.open('${discordOAuth}https%3A%2F%2Fdipped.dev&scope=identify+guilds','popup','width=500,height=720'); return false;`);
         }
     }
 
@@ -50,7 +45,7 @@ window.addEventListener('load', async () => {
     me = JSON.parse(me);
     if (me) {
         const container = document.getElementById('user');
-        document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.png?size=32`;
+        document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.webp?size=32`;
         document.getElementById('username').innerText = me.global_name;
         container.addEventListener('click', () => {
             document.getElementById('nav_popout').classList.toggle('hidden');

@@ -3,7 +3,7 @@ import { constructPage } from '../constants.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
-async function routes(fastify: FastifyInstance, options: any) {
+async function routes(fastify: FastifyInstance) {
     type test = {
         IDENTIFIER: string;
         type: string;
@@ -18,7 +18,7 @@ async function routes(fastify: FastifyInstance, options: any) {
         return reply;
     });
 
-    fastify.all('/servers', (req, reply) => reply.redirect(303, '/'));
+    fastify.all('/servers', (req, reply) => reply.redirect('/', 303));
 
     fastify.all('/servers/:IDENTIFIER', (req, reply) => {
         const pack = (req.params as test).IDENTIFIER;

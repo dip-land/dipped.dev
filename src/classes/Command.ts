@@ -5,12 +5,15 @@ import type {
     ChatInputCommandInteraction,
     Collection,
     Message,
+    MessageContextMenuCommandInteraction,
     PermissionResolvable,
     TextInputComponent,
+    UserContextMenuCommandInteraction,
 } from 'discord.js';
 import type { Client } from './Client';
 
 export class Command {
+    public type: number | undefined = 1;
     public name = '';
     public name_localizations;
     public description = '';
@@ -28,6 +31,16 @@ export class Command {
     public permissions?: Array<PermissionResolvable> = [];
     public prefixCommand?: (data: { message: Message; args: Array<string>; client: Client }) => Promise<unknown>;
     public slashCommand?: (data: { interaction: ChatInputCommandInteraction; options: ChatInputCommandInteraction['options']; client: Client }) => Promise<unknown>;
+    public contextUserCommand?: (data: {
+        interaction: UserContextMenuCommandInteraction;
+        options: UserContextMenuCommandInteraction['options'];
+        client: Client;
+    }) => Promise<unknown>;
+    public contextMessageCommand?: (data: {
+        interaction: MessageContextMenuCommandInteraction;
+        options: MessageContextMenuCommandInteraction['options'];
+        client: Client;
+    }) => Promise<unknown>;
     public button?: (interaction: ButtonInteraction) => Promise<unknown>;
     public selectMenu?: (interaction: AnySelectMenuInteraction) => Promise<unknown>;
     public modal?: (interaction: Message, fields: Collection<string, TextInputComponent>) => Promise<unknown>;
@@ -36,6 +49,7 @@ export class Command {
         client: Client
     ) => Promise<unknown>;
     constructor(data: CommandData) {
+        this.type = data.type;
         this.name = data.name;
         this.name_localizations = data.name_localizations;
         this.description = data.description;
@@ -52,6 +66,8 @@ export class Command {
         this.permissions = data.permissions;
         this.prefixCommand = data.prefixCommand;
         this.slashCommand = data.slashCommand;
+        this.contextUserCommand = data.contextUserCommand;
+        this.contextMessageCommand = data.contextMessageCommand;
         this.button = data.button;
         this.selectMenu = data.selectMenu;
         this.modal = data.modal;
@@ -59,6 +75,7 @@ export class Command {
     }
     public get applicationData() {
         return {
+            type: 1,
             name: this.name,
             name_localizations: this.name_localizations,
             description: this.description,
@@ -69,9 +86,30 @@ export class Command {
             nsfw: this.nsfw,
         };
     }
+    public get contextUserData() {
+        return {
+            type: 2,
+            name: this.name,
+            name_localizations: this.name_localizations,
+            default_member_permissions: this.default_member_permissions,
+            dm_permission: this.dm_permission,
+            nsfw: this.nsfw,
+        };
+    }
+    public get contextMessageData() {
+        return {
+            type: 3,
+            name: this.name,
+            name_localizations: this.name_localizations,
+            default_member_permissions: this.default_member_permissions,
+            dm_permission: this.dm_permission,
+            nsfw: this.nsfw,
+        };
+    }
 }
 
 interface CommandData {
+    type?: 1 | 2 | 3;
     name: string;
     name_localizations?: discordLocaleDictionary;
     description: string;
@@ -90,6 +128,12 @@ interface CommandData {
     permissions?: Array<PermissionResolvable>;
     prefixCommand?: (data: { message: Message; args: Array<string>; client: Client }) => Promise<unknown>;
     slashCommand?: (data: { interaction: ChatInputCommandInteraction; options: ChatInputCommandInteraction['options']; client: Client }) => Promise<unknown>;
+    contextUserCommand?: (data: { interaction: UserContextMenuCommandInteraction; options: UserContextMenuCommandInteraction['options']; client: Client }) => Promise<unknown>;
+    contextMessageCommand?: (data: {
+        interaction: MessageContextMenuCommandInteraction;
+        options: MessageContextMenuCommandInteraction['options'];
+        client: Client;
+    }) => Promise<unknown>;
     button?: (interaction: ButtonInteraction) => Promise<unknown>;
     selectMenu?: (interaction: AnySelectMenuInteraction) => Promise<unknown>;
     modal?: (interaction: Message, fields: Collection<string, TextInputComponent>) => Promise<unknown>;

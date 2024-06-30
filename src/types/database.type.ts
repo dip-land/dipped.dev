@@ -31,7 +31,25 @@ interface BaseUser {
     'role.id'?: string;
     'role.name'?: string;
     'role.color'?: string;
-    messages: number;
+    message: {
+        count: number;
+        history: { date: string; count: number }[];
+    };
+    'message.count'?: number;
+    'message.history'?: { date: string; count: number };
+    'message.history.date'?: string;
+    voice: {
+        channelID: string | null;
+        lastJoinDate: number | null;
+        time: number;
+        history: { date: string; time: number }[];
+    };
+    'voice.channelID'?: string | null;
+    'voice.lastJoinDate'?: number | null;
+    'voice.time'?: number;
+    'voice.history'?: { date: string; tiem: number };
+    'voice.history.date'?: string;
+    xp: number;
 }
 
 export type User<Editable> = Editable extends false ? { id: Snowflake } & BaseUser : Partial<BaseUser>;
@@ -43,15 +61,64 @@ export type UserSortOptions = {
     'role.id'?: SortDirection;
     'role.name'?: SortDirection;
     'role.color'?: SortDirection;
-    messages?: SortDirection;
+    'voice.id'?: SortDirection;
+    'voice.lastJoinDate'?: SortDirection;
+    'voice.time'?: SortDirection;
+    'message.count'?: SortDirection;
+    xp?: SortDirection;
 };
 
+type ProjectionOptions = boolean | 0 | 1;
+
 export interface UserProjectionOptions {
-    id?: boolean | 0 | 1;
-    username?: boolean | 0 | 1;
-    avatar?: boolean | 0 | 1;
-    'role.id'?: boolean | 0 | 1;
-    'role.name'?: boolean | 0 | 1;
-    'role.color'?: boolean | 0 | 1;
-    messages?: boolean | 0 | 1;
+    id?: ProjectionOptions;
+    username?: ProjectionOptions;
+    avatar?: ProjectionOptions;
+    'role.id'?: ProjectionOptions;
+    'role.name'?: ProjectionOptions;
+    'role.color'?: ProjectionOptions;
+    'voice.id'?: ProjectionOptions;
+    'voice.lastJoinDate'?: ProjectionOptions;
+    'voice.time'?: ProjectionOptions;
+    'message.count'?: ProjectionOptions;
+    xp?: ProjectionOptions;
+}
+
+export interface UserIncrementable {
+    'voice.lastJoinDate'?: number;
+    'voice.time'?: number;
+    'message.count'?: number;
+    xp?: number;
+}
+
+export interface Post {
+    id: string;
+    site: string;
+    site_id: number;
+    created_at: string;
+    next_update: number;
+    sources: Array<string>;
+    rating: string;
+    likes: number;
+    dislikes: number;
+    favorites: number;
+    file: {
+        width: number;
+        height: number;
+        duration?: number;
+        size?: number;
+        url: string;
+    };
+    preview: {
+        width: number;
+        height: number;
+        url: string;
+    };
+    tags: Array<string>;
+}
+
+export interface Tag {
+    name: string;
+    category: 'general' | 'species' | 'character' | 'copyright' | 'artist' | 'invalid' | 'lore' | 'meta';
+    count: number;
 }

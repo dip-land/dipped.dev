@@ -6,7 +6,7 @@ export default async (interaction: ChatInputCommandInteraction) => {
     if (!cmd || cmd.disabled || !cmd.slashCommand) return interaction.reply({ content: 'This command is disabled, it may be re-enabled in the future.', ephemeral: true });
     const hidden = !!interaction.options.get('hide')?.value || cmd.hidden || false;
     if (cmd.deferReply) await interaction.deferReply({ ephemeral: hidden });
-    if (client.isBotOwner(interaction.user.id)) return cmd?.slashCommand({ interaction, options: interaction.options, client });
+    if (client.isBotOwner(interaction.user)) return cmd?.slashCommand({ interaction, options: interaction.options, client });
 
     const timestamps = client.cooldowns.get(cmd.name) as Collection<string, number>;
     const now = Date.now();

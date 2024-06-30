@@ -3,8 +3,7 @@ import { Event } from '../classes/Event.js';
 import prefixCommand from '../handlers/prefixCommand.js';
 import { messageCreate } from '../handlers/database.js';
 
-export default new Event({
-    name: 'messageCreate',
+export default new Event('messageCreate', {
     on: true,
     async fn(message: Message<boolean>) {
         if (message.author.bot || message.author.system || !message.guild) return;

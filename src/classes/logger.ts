@@ -7,7 +7,7 @@ export default class Logger {
     public color: string;
     constructor(name: string, color: string) {
         this.name = name;
-        this.color = '\x1b[38;2;' + color;
+        this.color = '\x1b[38;2;' + color + 'm';
     }
     /**Console logs data with a blue time code */
     public log(...message: any) {

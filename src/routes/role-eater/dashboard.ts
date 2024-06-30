@@ -1,9 +1,13 @@
 import { FastifyInstance } from 'fastify';
-import { constructPage } from '../constants.js';
+import { constructPage, generateLeaderboardCanvas } from '../../constants.js';
+import { GlobalFonts } from '@napi-rs/canvas';
+import { getAllUsers } from '../../handlers/database.js';
 
-async function routes(fastify: FastifyInstance, options: any) {
-    fastify.get('/', async (req, res) => {
-        constructPage(res, {
+GlobalFonts.loadFontsFromDir(process.env.FONTS);
+
+async function routes(fastify: FastifyInstance) {
+    fastify.get('/', async (req, reply) => {
+        constructPage(reply, {
             language: 'en-US',
             head: {
                 title: 'Role Eater Dashboard - dipped.dev',
@@ -13,10 +17,10 @@ async function routes(fastify: FastifyInstance, options: any) {
             },
             body: { files: ['public/root/nav.html', 'public/role-eater/dashboard/index.html'] },
         });
-        return res;
+        return reply;
     });
-    fastify.get('/:guildID', async (req, res) => {
-        constructPage(res, {
+    fastify.get('/:guildID', async (req, reply) => {
+        constructPage(reply, {
             language: 'en-US',
             head: {
                 title: 'Role Eater Dashboard - dipped.dev',
@@ -26,20 +30,29 @@ async function routes(fastify: FastifyInstance, options: any) {
             },
             body: { files: ['public/root/nav.html', 'public/role-eater/dashboard/guild.html'] },
         });
-        return res;
+        return reply;
     });
-    fastify.get('/:guildID/:userID', async (req, res) => {
-        constructPage(res, {
+    fastify.get('/:guildID.png', async (req, reply) => {
+        const guildID = (req.params as { guildID: string }).guildID;
+        const users = await getAllUsers(guildID, { sort: { xp: 'desc' }, limit: 10 });
+        if (!users) return reply.status(404);
+
+        const data = await generateLeaderboardCanvas(users, 70, 5);
+        reply.type('image/png');
+        return reply.send(data);
+    });
+    fastify.get('/:guildID/:userID', async (req, reply) => {
+        constructPage(reply, {
             language: 'en-US',
             head: {
                 title: 'Role Eater Dashboard - dipped.dev',
                 description: 'Server Dashboard.',
                 image: '/static/icons/favicon.png',
-                files: ['public/root/head.html', 'public/role-eater/dashboard/guildUserHead.html'],
+                files: [],
             },
-            body: { files: ['public/root/nav.html', 'public/role-eater/dashboard/guildUser.html'] },
+            body: { files: ['public/role-eater/dashboard/user.html'] },
         });
-        return res;
+        return reply;
     });
 }
 
