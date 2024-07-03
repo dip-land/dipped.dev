@@ -29,13 +29,13 @@ client.once('ready', async () => {
     await client.registerEvents();
     await client.registerCommands(['global', '1182260148501225552']);
 
-    const activities = ['Playing with roles', `Watching ${await getUserCountAll()} users`, 'Version v.3.1.0'];
+    const activities = ['Playing with roles', `Watching ${await getUserCountAll()} users`, 'Version v.3.1.1'];
     let count = 1;
     client.user?.setPresence({ activities: [{ name: activities[0], type: ActivityType.Custom }], status: 'online' });
     setInterval(() => {
         const selected = activities[count];
         client.user?.setPresence({ activities: [{ name: selected, type: ActivityType.Custom }], status: 'online' });
-        count = count + 1 > activities.length ? 0 : count + 1;
+        count = count + 1 >= activities.length ? 0 : count + 1;
     }, 5 * 1000 * 60);
 
     const guilds = await client.guilds.fetch();
