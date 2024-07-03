@@ -14,6 +14,7 @@ export default new Command({
     options: [],
     async slashCommand({ interaction, client }) {
         if (!interaction.guildId) return;
+        await interaction.reply('Loading <a:wiggle:1190127338101415957>');
 
         const canvas = createCanvas(1280, 706);
         const ctx = canvas.getContext('2d');
@@ -32,7 +33,7 @@ export default new Command({
         ctx.drawImage(stats, 0, 0, 1280, 706);
 
         const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: `${interaction.user.username}_stats.png` });
-        interaction.reply({ files: [attachment] });
+        interaction.editReply({ content: '', files: [attachment] });
         await browser.close();
     },
 });

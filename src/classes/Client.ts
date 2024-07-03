@@ -44,14 +44,14 @@ export class Client extends DjsClient {
     public error = this.logger.error;
 
     public isBotOwner(member: User): boolean {
-        return member.id === '251580400097427456';
+        return member.id === this.application?.owner?.id;
     }
 
     public async registerEvents(): Promise<this> {
         for (const eventPath of (await glob('./dist/events/**/*.js', { platform: 'linux' })).toString().replaceAll('dist', '..').split(',')) {
             try {
                 const event: Event = (await import(eventPath)).default;
-                if (!event.on) this.once(event.event, (...args) => event.fn(...args));
+                if (event.once) this.once(event.event, (...args) => event.fn(...args));
                 else this.on(event.event, (...args) => event.fn(...args));
             } catch (err: Error | unknown) {
                 this.error(eventPath, err);

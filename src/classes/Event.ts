@@ -1,34 +1,22 @@
 import { ClientEvents } from 'discord.js';
 
-export class Event {
-    #event: keyof ClientEvents;
-    #on: EventObject['on'] = true;
-    #fn: EventObject['fn'];
-    constructor(event: keyof ClientEvents, options: EventObject) {
+export class Event<T extends keyof ClientEvents = keyof ClientEvents> {
+    #event: T;
+    #once: boolean;
+    #fn: (...args: ClientEvents[T]) => Promise<void | unknown>;
+    constructor(event: T, options: { once?: boolean; fn: (...args: ClientEvents[T]) => Promise<void | unknown> }) {
         this.#event = event;
-        this.#on = options?.on;
+        this.#once = options?.once ?? false;
         this.#fn = options.fn;
     }
 
-    public get event(): keyof ClientEvents {
+    public get event(): T {
         return this.#event;
     }
-    public get on(): EventObject['on'] {
-        return this.#on;
+    public get once(): boolean {
+        return this.#once;
     }
-    public get fn(): EventObject['fn'] {
+    public get fn(): (...args: ClientEvents[T]) => Promise<void | unknown> {
         return this.#fn;
     }
 }
-
-export type EventObject = {
-    on?: boolean;
-    fn: (...args: any) => Promise<unknown>;
-};
-
-new Event('error', {
-    on: true,
-    async fn(error: Error) {
-        console.log(error);
-    },
-});

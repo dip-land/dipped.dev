@@ -2,8 +2,13 @@
 .env
 dist/
 node_modules/
-public/r2modman
+public/**/*.zip
 public/minecraft/servers
 public/static/styles/**/*.css
 public/static/styles/**/*.css.map
 package-lock.json
+*booru*
+scrape/
+public/static/images/counter
+tag.ts
+tag_childProcess.ts

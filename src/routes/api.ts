@@ -103,14 +103,44 @@ async function routes(fastify: FastifyInstance) {
 
     fastify.get('/role-eater/:serverID', async (req, reply) => {
         const serverID = (req.params as { serverID: string }).serverID;
+        const query = req.query as { limit: string };
         const guildData = await getGuildInfo(serverID);
         if (!guildData) return reply.code(401), reply.send([]);
-        const users = await getAllUsers(serverID, { sort: { xp: 'desc' } });
+        const users = await getAllUsers(serverID, { sort: { xp: 'desc' }, limit: +query.limit || undefined });
+        const message = await getAllUsers(serverID, { sort: { 'message.count': 'desc' }, limit: +query.limit || undefined });
+        const voice = await getAllUsers(serverID, { sort: { 'voice.time': 'desc' }, limit: +query.limit || undefined });
         const client = (await import('../index.js')).client;
+        const apiGuild = client.isReady() ? await client.guilds.fetch(serverID) : undefined;
+        let parsedUsers = [];
+        let parsedMessage = [];
+        let parsedVoice = [];
+        if (users) {
+            for (const user of users) {
+                if (!apiGuild) continue;
+                const apiUser = await apiGuild.members.fetch(user.id);
+                parsedUsers.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+            }
+        }
+        if (message) {
+            for (const user of message) {
+                if (!apiGuild) continue;
+                const apiUser = await apiGuild.members.fetch(user.id);
+                parsedMessage.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+            }
+        }
+        if (voice) {
+            for (const user of voice) {
+                if (!apiGuild) continue;
+                const apiUser = await apiGuild.members.fetch(user.id);
+                parsedVoice.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+            }
+        }
         return {
             guild: guildData,
-            apiGuild: client.isReady() ? await client.guilds.fetch(serverID) : undefined,
-            users,
+            apiGuild,
+            users: parsedUsers,
+            message: parsedMessage,
+            voice: parsedVoice,
         };
     });
 

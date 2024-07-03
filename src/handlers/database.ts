@@ -8,6 +8,7 @@ const botDatabase = new MongoClient('mongodb://localhost:27017/DipLand', { compr
 
 export function getCollection(guild: Snowflake) {
     const collection = botDatabase.collection(guild);
+    if (!collection.collectionName) return false;
     return collection;
 }
 
@@ -16,44 +17,62 @@ export function getCollections() {
     return collections;
 }
 
+export async function createCollection(guild: Snowflake) {
+    const collection = getCollection(guild) || (await botDatabase.createCollection(guild));
+    return collection;
+}
+
 export async function createGuildInfo(guild: Snowflake, data: Guild<false>) {
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     const document = await collection.insertOne(data);
     return document;
 }
 
 export async function editGuildInfo(guild: Snowflake, data: Guild<true>) {
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     const document = await collection.findOneAndUpdate({ id: guild }, { $set: data });
     return document;
 }
 
 export async function getGuildInfo(guild: Snowflake) {
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     const document = await collection.findOne({ id: guild });
     return document;
 }
 
+export async function getUserCountAll() {
+    const collections = await getCollections();
+    let count = 0;
+    for (const collection of collections) {
+        count += (await collection.countDocuments()) - 1;
+    }
+    return count;
+}
+
 export async function createUser(guild: Snowflake, data: User<false>) {
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
-    const document = await collection.insertOne(data);
-    return document;
+    if (!collection) return false;
+    const fetchedUser = await getUser(guild, data.id);
+    if (!fetchedUser) {
+        const document = await collection.insertOne(data);
+        return document;
+    }
+    return fetchedUser;
 }
 
 export async function getUser(guild: Snowflake, user: User<false>['id']) {
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     const document = await collection.findOne({ id: user });
     return document;
 }
 
 export async function getAllUsers(guild: Snowflake, options?: { sort?: UserSortOptions; project?: UserProjectionOptions; limit?: number }) {
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     if (options?.project) {
         const documents = collection
             .find({ avatar: { $exists: true } }, options?.limit ? { limit: options.limit } : {})
@@ -71,7 +90,7 @@ export async function getAllUsers(guild: Snowflake, options?: { sort?: UserSortO
 
 export async function editUser(guild: Snowflake, user: User<false>['id'], data: User<true>, options?: FindOneAndUpdateOptions) {
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     const document = await collection.findOneAndUpdate({ id: user }, { $set: data }, options ?? {});
     return document;
 }
@@ -79,7 +98,7 @@ export async function editUser(guild: Snowflake, user: User<false>['id'], data: 
 export async function editMessageHistory(guild: Snowflake, user: User<false>['id'], options?: FindOneAndUpdateOptions) {
     const date = new Date().toDateString();
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     const fetchedUser = await getUser(guild, user);
     if (!fetchedUser) return;
     if (fetchedUser.message.history.find((v: User<true>['message.history']) => v!.date === date)) {
@@ -92,7 +111,7 @@ export async function editMessageHistory(guild: Snowflake, user: User<false>['id
 export async function editVoiceHistory(guild: Snowflake, user: User<false>['id'], time: number, options?: FindOneAndUpdateOptions) {
     const date = new Date().toDateString();
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     const fetchedUser = await getUser(guild, user);
     if (!fetchedUser) return;
     if (fetchedUser.voice.history.find((v: User<true>['voice.history']) => v!.date === date)) {
@@ -104,7 +123,7 @@ export async function editVoiceHistory(guild: Snowflake, user: User<false>['id']
 
 export async function incrementUser(guild: Snowflake, user: User<false>['id'], data: any, options?: FindOneAndUpdateOptions) {
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     const document = await collection.findOneAndUpdate({ id: user }, { $inc: data }, options ?? {});
     return document;
 }
@@ -121,7 +140,7 @@ export async function editUserAll(user: User<false>['id'], data: User<true>, opt
 
 export async function deleteUser(guild: Snowflake, user: User<false>['id']) {
     const collection = getCollection(guild);
-    if (!collection.collectionName) return false;
+    if (!collection) return false;
     const deleteResult = await collection.deleteOne({ id: user });
     return deleteResult;
 }

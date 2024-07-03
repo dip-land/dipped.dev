@@ -16,6 +16,7 @@ export default new Command({
     async slashCommand({ interaction, options, client }) {
         const userOption = options.getMember('user') as GuildMember;
         if (!interaction.guildId || userOption?.pending) return;
+        await interaction.reply('Loading <a:wiggle:1190127338101415957>');
         const canvas = createCanvas(1280, 706);
         const ctx = canvas.getContext('2d');
         const browser = await launch();
@@ -33,12 +34,13 @@ export default new Command({
         ctx.drawImage(stats, 0, 0, 1280, 706);
 
         const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: `${userOption.user.username}_stats.png` });
-        interaction.reply({ files: [attachment] });
+        interaction.followUp({ content: '', files: [attachment] });
         await browser.close();
     },
     async contextUserCommand({ interaction, options, client }) {
         const userOption = options.getMember('user') as GuildMember;
         if (!interaction.guildId || userOption?.pending) return;
+        await interaction.reply({ content: 'Loading <a:wiggle:1190127338101415957>', ephemeral: true });
         const canvas = createCanvas(1280, 706);
         const ctx = canvas.getContext('2d');
         const browser = await launch();
@@ -56,7 +58,7 @@ export default new Command({
         ctx.drawImage(stats, 0, 0, 1280, 706);
 
         const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: `${userOption.user.username}_stats.png` });
-        interaction.reply({ files: [attachment], ephemeral: true });
+        interaction.editReply({ content: '', files: [attachment] });
         await browser.close();
     },
 });

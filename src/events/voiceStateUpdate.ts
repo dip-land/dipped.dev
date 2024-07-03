@@ -1,10 +1,8 @@
-import type { VoiceState } from 'discord.js';
 import { Event } from '../classes/Event.js';
 import { editUser, editVoiceHistory, getUser, incrementUser } from '../handlers/database.js';
 
 export default new Event('voiceStateUpdate', {
-    on: true,
-    async fn(oldState: VoiceState, newState: VoiceState) {
+    async fn(oldState, newState) {
         if (newState.channelId && oldState.channelId !== newState.channelId)
             editUser(newState.guild.id, newState.id, { 'voice.channelID': newState.channelId, 'voice.lastJoinDate': Date.now() });
         else if (newState.channelId === null) {

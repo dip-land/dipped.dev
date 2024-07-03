@@ -33,13 +33,17 @@ async function routes(fastify: FastifyInstance) {
         return reply;
     });
     fastify.get('/:guildID.png', async (req, reply) => {
-        const guildID = (req.params as { guildID: string }).guildID;
-        const users = await getAllUsers(guildID, { sort: { xp: 'desc' }, limit: 10 });
-        if (!users) return reply.status(404);
-
-        const data = await generateLeaderboardCanvas(users, 70, 5);
-        reply.type('image/png');
-        return reply.send(data);
+        constructPage(reply, {
+            language: 'en-US',
+            head: {
+                title: 'Role Eater Dashboard - dipped.dev',
+                description: 'Server Dashboard.',
+                image: '/static/icons/favicon.png',
+                files: [],
+            },
+            body: { files: ['public/role-eater/dashboard/guildImage.html'] },
+        });
+        return reply;
     });
     fastify.get('/:guildID/:userID', async (req, reply) => {
         constructPage(reply, {

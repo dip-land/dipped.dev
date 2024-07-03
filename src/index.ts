@@ -1,7 +1,7 @@
 import { ActivityType, Partials } from 'discord.js';
 import { Client } from './classes/Client.js';
 import 'dotenv/config';
-import { createUser, deleteUser, editUser, getUser, incrementUser } from './handlers/database.js';
+import { createUser, deleteUser, editUser, getUser, getUserCountAll, incrementUser } from './handlers/database.js';
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyFavicon from 'fastify-favicon';
@@ -26,9 +26,17 @@ export const client = new Client({
 
 client.once('ready', async () => {
     client.log(`Online`);
-    client.user?.setPresence({ activities: [{ name: 'Playing with roles', type: ActivityType.Custom }], status: 'online' });
     await client.registerEvents();
     await client.registerCommands(['global', '1182260148501225552']);
+
+    const activities = ['Playing with roles', `Watching ${await getUserCountAll()} users`, 'Version v.3.1.0'];
+    let count = 1;
+    client.user?.setPresence({ activities: [{ name: activities[0], type: ActivityType.Custom }], status: 'online' });
+    setInterval(() => {
+        const selected = activities[count];
+        client.user?.setPresence({ activities: [{ name: selected, type: ActivityType.Custom }], status: 'online' });
+        count = count + 1 > activities.length ? 0 : count + 1;
+    }, 5 * 1000 * 60);
 
     const guilds = await client.guilds.fetch();
     guilds.forEach(async (guild) => {
@@ -46,26 +54,6 @@ client.once('ready', async () => {
                 editUser(guild.id, member.id, { 'voice.channelID': null, 'voice.lastJoinDate': null });
             } else if (memberVoiceID && !userVoiceID) {
                 editUser(guild.id, member.id, { 'voice.channelID': memberVoiceID, 'voice.lastJoinDate': Date.now() });
-            }
-            if (!user.message?.count) {
-                await deleteUser(guild.id, user.id);
-                await createUser(guild.id, {
-                    id: user.id,
-                    username: user.username,
-                    avatar: user.avatar,
-                    role: user.role,
-                    voice: {
-                        channelID: user.voice.id,
-                        lastJoinDate: user.voice.lastJoin,
-                        time: user.voice.time,
-                        history: [],
-                    },
-                    message: {
-                        count: +user.messages + 1,
-                        history: [],
-                    },
-                    xp: +user.xp + 1,
-                });
             }
         }
     });
@@ -113,6 +101,8 @@ fastify.register((await import('./routes/booru/posts.js')).default, { prefix: '/
 fastify.register((await import('./routes/booru/tags.js')).default, { prefix: '/booru/tags' });
 fastify.register((await import('./routes/booru/users.js')).default, { prefix: '/booru/users' });
 
+fastify.all('/poke', (req, reply) => reply.sendFile('poke.zip', path.join(process.cwd(), 'public')));
+fastify.all('/crewlink', (req, reply) => reply.sendFile('BCL_3.1.3.zip', path.join(process.cwd(), 'public')));
 fastify.all('/robots.txt', (req, reply) => reply.sendFile('robots.txt', path.join(process.cwd(), 'public')));
 fastify.all('/sitemap.xml', (req, reply) => reply.sendFile('sitemap.xml', path.join(process.cwd(), 'public')));
 fastify.all('/ads.txt', (req, reply) => reply.sendFile('ads.txt', path.join(process.cwd(), 'public')));
