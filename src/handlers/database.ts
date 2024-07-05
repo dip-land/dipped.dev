@@ -1,9 +1,8 @@
-import { BulkWriteOptions, Document, Filter, FindOneAndUpdateOptions, InsertOneOptions, MongoClient, UpdateFilter, UpdateOptions, WithId } from 'mongodb';
+import { Document, FindOneAndUpdateOptions, MongoClient, WithId } from 'mongodb';
 import { Client } from '../classes/Client';
 import { Client as DjsClient, Snowflake } from 'discord.js';
-import { Guild, User, UserProjectionOptions, UserSortOptions, Post, Tag } from '../types/database.type.js';
+import { Guild, User, UserProjectionOptions, UserSortOptions } from '../types/database.type.js';
 
-//bot
 const botDatabase = new MongoClient('mongodb://localhost:27017/DipLand', { compressors: ['snappy', 'zlib'] }).db();
 
 export function getCollection(guild: Snowflake) {
@@ -171,61 +170,4 @@ export async function messageCreate(client: Client | DjsClient, guild: Snowflake
         await incrementUser(guild, user, { 'message.count': 1, xp: 1 });
         editMessageHistory(guild, user);
     }
-}
-
-//booru
-const booruDatabase = new MongoClient('mongodb://localhost:27017/Booru', { compressors: ['snappy', 'zlib'] }).db();
-
-export function getPosts() {
-    return booruDatabase.collection('posts');
-}
-
-export function findPost(data: Partial<Post>) {
-    const posts = getPosts();
-    return posts.findOne(data);
-}
-
-export function findPosts(data: Partial<Post>) {
-    const posts = getPosts();
-    return posts.find(data);
-}
-
-export async function editPost(id: string, data: Partial<Post>, options?: FindOneAndUpdateOptions) {
-    const posts = getPosts();
-    return await posts.findOneAndUpdate({ id }, { $set: data }, options ?? {});
-}
-
-export async function insertPost(data: Partial<Post>, options?: InsertOneOptions) {
-    const posts = getPosts();
-    return await posts.insertOne(data, options ?? {});
-}
-
-export async function insertPosts(data: Array<Partial<Post>>, options?: BulkWriteOptions) {
-    const posts = getPosts();
-    return await posts.insertMany(data, options ?? {});
-}
-
-export function getTags() {
-    return booruDatabase.collection('tags');
-}
-
-export function incrementTag(data: { name: Tag['name']; category?: Tag['category']; incrementAmount?: number }, options?: UpdateOptions) {
-    const tags = getTags();
-    if (!data.category) return tags.updateOne({ name: data.name }, { $inc: { count: data.incrementAmount ?? 1 } }, options ?? {});
-    return tags.updateOne({ name: data.name, category: data.category }, { $inc: { count: data.incrementAmount ?? 1 } }, options ?? {});
-}
-
-export function editTag(name: Tag['name'], data: Partial<Tag>, options?: UpdateOptions) {
-    const tags = getTags();
-    tags.updateMany({ name }, { $set: data }, options);
-}
-
-export function incrementTags(data: { name: Tag['name']; category?: Tag['category']; incrementAmount?: number }, options?: UpdateOptions) {
-    const tags = getTags();
-    if (!data.category) return tags.updateMany({ name: data.name }, { $inc: { count: data.incrementAmount ?? 1 } }, options ?? {});
-    return tags.updateMany({ name: data.name, category: data.category }, { $inc: { count: data.incrementAmount ?? 1 } }, options ?? {});
-}
-
-export function getBooruUsers() {
-    return booruDatabase.collection('users');
 }

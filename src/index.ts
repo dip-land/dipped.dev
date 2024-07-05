@@ -1,19 +1,13 @@
 import { ActivityType, Partials } from 'discord.js';
 import { Client } from './classes/Client.js';
 import 'dotenv/config';
-import { createUser, deleteUser, editUser, getUser, getUserCountAll, incrementUser } from './handlers/database.js';
+import { editUser, getUser, getUserCountAll, incrementUser } from './handlers/database.js';
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyFavicon from 'fastify-favicon';
 import { constructPage } from './constants.js';
 import path from 'node:path';
 import Logger from './classes/logger.js';
-import { ChildProcess, fork } from 'node:child_process';
-import * as readline from 'node:readline/promises';
-import { stdin as input, stdout as output } from 'node:process';
-import { glob } from 'glob';
-
-const rl = readline.createInterface({ input: input as any, output: output as any });
 
 //Bot
 export const client = new Client({
@@ -29,7 +23,7 @@ client.once('ready', async () => {
     await client.registerEvents();
     await client.registerCommands(['global', '1182260148501225552']);
 
-    const activities = ['Playing with roles', `Watching ${await getUserCountAll()} users`, 'Version v.3.1.1'];
+    const activities = ['Playing with roles', `Watching ${await getUserCountAll()} users`, 'Version v.3.1.2'];
     let count = 1;
     client.user?.setPresence({ activities: [{ name: activities[0], type: ActivityType.Custom }], status: 'online' });
     setInterval(() => {
@@ -95,11 +89,6 @@ fastify.register((await import('./routes/minecraft.js')).default, { prefix: '/mi
 fastify.register((await import('./routes/projects.js')).default, { prefix: '/projects' });
 fastify.register((await import('./routes/role-eater/index.js')).default, { prefix: '/role-eater' });
 fastify.register((await import('./routes/role-eater/dashboard.js')).default, { prefix: '/role-eater/dashboard' });
-fastify.register((await import('./routes/booru/index.js')).default, { prefix: '/booru' });
-fastify.register((await import('./routes/booru/media.js')).default, { prefix: '/booru/media' });
-fastify.register((await import('./routes/booru/posts.js')).default, { prefix: '/booru/posts' });
-fastify.register((await import('./routes/booru/tags.js')).default, { prefix: '/booru/tags' });
-fastify.register((await import('./routes/booru/users.js')).default, { prefix: '/booru/users' });
 
 fastify.all('/poke', (req, reply) => reply.sendFile('poke.zip', path.join(process.cwd(), 'public')));
 fastify.all('/crewlink', (req, reply) => reply.sendFile('BCL_3.1.3.zip', path.join(process.cwd(), 'public')));
@@ -121,46 +110,3 @@ process.on('SIGINT', async () => {
     console.log('Shutdown.');
     process.exit();
 });
-
-//booru
-// let results = {} as any;
-// const programs: Array<ChildProcess> = [];
-
-// for (const path of (await glob('./dist/scrape/**/*.js', { platform: 'linux' })).toString().replaceAll('dist', '..').split(',').sort()) {
-//     const type = path.replace('../scrape/', '').replace('.js', '');
-//     if (!results.hasOwnProperty(type)) results[type] = { restarts: 0, lastTime: '0ms', current: 0 };
-//     registerHandler(type);
-// }
-
-// process.setMaxListeners(50);
-
-// function registerHandler(type: string) {
-//     let program = fork(`./dist/scrape/${type}.js`, ['fork']);
-//     programs.push(program);
-//     program.addListener('message', (message: string) => {
-//         const msg = message ? message.split(' ') : undefined;
-//         if (msg) {
-//             results[type].lastTime = `${msg[0]}ms`;
-//             results[type].current = parseInt(msg[1]).toLocaleString();
-//         }
-//     });
-//     program.addListener('exit', () => {
-//         programs.splice(programs.indexOf(program), 1);
-//         results[type].restarts = results[type].restarts + 1;
-//         setTimeout(() => registerHandler(type), 60_000 * 5);
-//     });
-// }
-
-// rl.on('line', (input: string) => {
-//     if (input === 'scrapeStats' || input === 'ss') console.log(results);
-//     if (input === '-e' || input === 'exit') {
-//         for (const program of programs) {
-//             program.kill('SIGINT');
-//         }
-//         process.exit('SIGINT');
-//     }
-// });
-
-// setInterval(() => {
-//     if (new Date().getHours() === 4) fork(`./dist/tag.js`);
-// }, 60_000 * 60);

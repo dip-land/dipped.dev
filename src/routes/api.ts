@@ -60,21 +60,28 @@ async function routes(fastify: FastifyInstance) {
     });
 
     fastify.get('/minecraft/servers/:server', async (req, reply) => {
-        const ip = req.headers['cf-connecting-ip'] || 'localhost';
         const guilds = req.headers.guilds ? JSON.parse(`${req.headers.guilds}`) : false;
         const server = (req.params as { server: string }).server;
         if (fs.existsSync(path.join(process.cwd(), 'public/minecraft/servers', `${server}`))) {
+            const ip = req.headers['cf-connecting-ip'] || 'localhost';
             const packInfo = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public/minecraft/servers', `${server}/packInfo.json`), { encoding: 'utf8', flag: 'r' }));
             let packIP = packInfo.server.ip;
-            if (ip === '162.227.64.166' && packIP) packIP = '192.168.1.91:' + packIP.split(':')[1];
+            const port = packIP.split(':')[1];
             if (!guilds || !guilds.filter((guild: string) => guild === '1110754252315435070')[0]) reply.send({ status: 'OKAY', ip: false, players: false });
             if (packIP) {
-                const port = packIP.split(':')[1];
+                if (ip === process.env.ORIGIN) packIP = '192.168.1.91:' + port;
                 try {
-                    const server = await mc.lookup({ host: 'localhost', port });
+                    const server = await mc.lookup({ host: '127.0.0.1', port });
                     reply.send({ status: 'Online', ip: packIP, players: (server!.status as any).players.online, packInfo });
                 } catch (error) {
-                    reply.send({ status: 'Offline', ip: packIP, players: false, packInfo });
+                    try {
+                        const server = await mc.lookup({ host: '127.0.0.1', port, disableJSONParse: true });
+                        const serverStatus = JSON.parse('[' + server.statusRaw.replace(/}\\{/g, '},{') + ']');
+                        reply.send({ status: 'Online', ip: packIP, players: serverStatus[0].players.online, packInfo });
+                    } catch (error) {
+                        console.log(error);
+                        reply.send({ status: 'Offline', ip: packIP, players: false, packInfo });
+                    }
                 }
             } else {
                 reply.send({ status: 'Archived', ip: packIP, players: false, packInfo });

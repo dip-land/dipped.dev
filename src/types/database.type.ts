@@ -90,35 +90,3 @@ export interface UserIncrementable {
     'message.count'?: number;
     xp?: number;
 }
-
-export interface Post {
-    id: string;
-    site: string;
-    site_id: number;
-    created_at: string;
-    next_update: number;
-    sources: Array<string>;
-    rating: string;
-    likes: number;
-    dislikes: number;
-    favorites: number;
-    file: {
-        width: number;
-        height: number;
-        duration?: number;
-        size?: number;
-        url: string;
-    };
-    preview: {
-        width: number;
-        height: number;
-        url: string;
-    };
-    tags: Array<string>;
-}
-
-export interface Tag {
-    name: string;
-    category: 'general' | 'species' | 'character' | 'copyright' | 'artist' | 'invalid' | 'lore' | 'meta';
-    count: number;
-}
