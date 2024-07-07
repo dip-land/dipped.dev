@@ -192,9 +192,7 @@
             </div>
             <div>
                 <span>${user.message.count.toLocaleString()} Messages</span>
-                <span>${Number(user.voice.time / 60)
-                    .toFixed(2)
-                    .toLocaleString()} Voice Hours</span>
+                <span>${Number(user.voice.time).toLocaleString()} Voice Minutes</span>
             </div>
         </div>`;
         }

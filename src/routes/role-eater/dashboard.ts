@@ -1,7 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { constructPage, generateLeaderboardCanvas } from '../../constants.js';
+import { constructPage } from '../../constants.js';
 import { GlobalFonts } from '@napi-rs/canvas';
-import { getAllUsers } from '../../handlers/database.js';
 
 GlobalFonts.loadFontsFromDir(process.env.FONTS);
 

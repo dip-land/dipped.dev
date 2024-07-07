@@ -23,7 +23,7 @@ client.once('ready', async () => {
     await client.registerEvents();
     await client.registerCommands(['global', '1182260148501225552']);
 
-    const activities = ['Playing with roles', `Watching ${await getUserCountAll()} users`, 'Version v.3.1.2'];
+    const activities = ['Playing with roles', `Watching ${await getUserCountAll()} users`, 'Version v.3.1.3'];
     let count = 1;
     client.user?.setPresence({ activities: [{ name: activities[0], type: ActivityType.Custom }], status: 'online' });
     setInterval(() => {

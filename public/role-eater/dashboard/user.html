@@ -165,6 +165,7 @@
     .content i {
         font-size: 1.5rem;
         margin-left: 0.3rem;
+        color: hsl(224, 13%, 59%);
     }
     #chart {
         display: flex;
@@ -182,6 +183,11 @@
     #chart > div > span {
         font-weight: bold;
         font-size: 2rem;
+    }
+    div > span > i {
+        font-size: 1.5rem !important;
+        color: hsl(224, 13%, 59%);
+        font-weight: 400 !important;
     }
     #chart > div > :nth-child(2) {
         margin-left: auto;
@@ -256,15 +262,15 @@
                 <div id="voiceActivity" class="content">
                     <div>
                         <span>Today</span>
-                        <div><span id="voiceActivity1d">0</span><i>hours</i></div>
+                        <div><span id="voiceActivity1d">0</span><i>mins</i></div>
                     </div>
                     <div>
                         <span>Week</span>
-                        <div><span id="voiceActivity7d">0</span><i>hours</i></div>
+                        <div><span id="voiceActivity7d">0</span><i>mins</i></div>
                     </div>
                     <div>
                         <span>All Time</span>
-                        <div><span id="voiceActivityall">0</span><i>hours</i></div>
+                        <div><span id="voiceActivityall">0</span><i>mins</i></div>
                     </div>
                 </div>
             </div>
@@ -274,11 +280,11 @@
                 <span>Activity Last 90 Days</span>
                 <div>
                     <div style="background-color: #36a2eb"></div>
-                    <span>Message</span>
+                    <span>Message <i>(COUNT)</i></span>
                 </div>
                 <div>
                     <div style="background-color: #ff6384"></div>
-                    <span>Voice</span>
+                    <span>Voice <i>(HOURS)</i></span>
                 </div>
             </div>
             <canvas height="190" width="1240" id="activityChart"></canvas>
@@ -307,8 +313,8 @@
             maximumFractionDigits: 2,
         });
 
-        document.getElementById('messageActivityall').innerHTML = numberFormatter.format(data.user.message.count);
-        document.getElementById('voiceActivityall').innerHTML = numberFormatter.format(data.user.voice.time / 60);
+        document.getElementById('messageActivityall').innerHTML = numberFormatter.format(data.user.message.count).toLowerCase();
+        document.getElementById('voiceActivityall').innerHTML = numberFormatter.format(data.user.voice.time).toLowerCase();
 
         const today = new Date();
         const labels = [];
@@ -322,12 +328,12 @@
             labels.push(formatter.format(day));
             const value = messageHistory.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
             if (index === 0) {
-                document.getElementById('messageActivity1d').innerHTML = numberFormatter.format(value?.count ?? 0);
+                document.getElementById('messageActivity1d').innerHTML = numberFormatter.format(value?.count ?? 0).toLowerCase();
             }
             if (index < 8) messageWeekCount = messageWeekCount + (value?.count ?? 0);
             messageData.push(value?.count ?? 0);
         }
-        document.getElementById('messageActivity7d').innerHTML = numberFormatter.format(messageWeekCount);
+        document.getElementById('messageActivity7d').innerHTML = numberFormatter.format(messageWeekCount).toLowerCase();
 
         const voiceHistory = data.user.voice.history;
         let voiceWeekCount = 0;
@@ -335,12 +341,12 @@
             const day = new Date(new Date().setDate(today.getDate() - index));
             const value = voiceHistory.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
             if (index === 0) {
-                document.getElementById('voiceActivity1d').innerHTML = numberFormatter.format(value?.time / 60 || 0);
+                document.getElementById('voiceActivity1d').innerHTML = numberFormatter.format(value?.time || 0).toLowerCase();
             }
             if (index < 8) voiceWeekCount = voiceWeekCount + (value?.time ?? 0);
             voiceData.push(value?.time / 60 || 0);
         }
-        document.getElementById('voiceActivity7d').innerHTML = numberFormatter.format(voiceWeekCount / 60);
+        document.getElementById('voiceActivity7d').innerHTML = numberFormatter.format(voiceWeekCount).toLowerCase();
 
         const ctx = document.getElementById('activityChart');
 

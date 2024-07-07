@@ -2,9 +2,7 @@ import { FastifyReply } from 'fastify';
 import { createReadStream, readFileSync } from 'fs';
 import { DOMWindow, JSDOM } from 'jsdom';
 import path from 'path';
-import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { Document } from 'mongodb';
-import { getAllUsers } from './handlers/database.js';
 
 export async function sendHtml(reply: FastifyReply, file: string) {
     reply.type('text/html').send(createReadStream(path.join(process.cwd(), file)));
@@ -133,65 +131,4 @@ export async function constructPage(
 export function paramToArray(param: any) {
     if (!param) return [];
     return [...new Set(param.split(/\s|,|\+/g))];
-}
-
-export async function generateLeaderboardCanvas(users: Document[], userSize: number, padding: number) {
-    const count = users.length;
-    const canvas = createCanvas(680, (userSize + padding) * count - padding);
-    const ctx = canvas.getContext('2d');
-    for (const index in users) {
-        ctx.fillStyle = '#0f121a';
-        if (+index === count) break;
-        const user = users[index];
-
-        const yPosition = +index * (userSize + padding);
-        ctx.beginPath();
-        ctx.roundRect(0, yPosition, 680, userSize, 12);
-        ctx.fill();
-        ctx.closePath();
-
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'black';
-        ctx.fillStyle = +index === 0 ? '#ffd700' : +index === 1 ? '#c0c0c0' : +index === 2 ? '#cd7f32' : '#21242d';
-        ctx.beginPath();
-        ctx.roundRect(padding, yPosition + padding, userSize - padding * 2, userSize - padding * 2, 10);
-        ctx.fill();
-        ctx.shadowBlur = 5;
-        ctx.font = 'bold 26px Inter';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText((+index + 1).toString(), userSize / 2, userSize / 2 + yPosition);
-        ctx.shadowBlur = 0;
-
-        const userAvatar = await loadImage(`${user.avatar}?size=64`);
-        ctx.beginPath();
-        ctx.roundRect(userSize, yPosition + padding, userSize - padding * 2, userSize - padding * 2, 10);
-        ctx.closePath();
-        ctx.save();
-        ctx.clip();
-        ctx.drawImage(userAvatar, userSize, yPosition + padding, userSize - padding * 2, userSize - padding * 2);
-        ctx.restore();
-
-        ctx.textAlign = 'left';
-        ctx.font = 'bold 22px Inter';
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowBlur = 5;
-        ctx.fillText(user.username, userSize * 2 + padding, userSize / 2 + yPosition);
-
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'top';
-        ctx.font = 'bold 16px Inter';
-        ctx.fillStyle = '#8a91a5';
-        const formatter = Intl.NumberFormat('en-US', {
-            notation: 'compact',
-            maximumFractionDigits: 1,
-        });
-        ctx.fillText(`Level: ${formatter.format(Math.floor(Math.sqrt(+user.xp / 10)))}`, 680 - padding * 3, yPosition + padding * 3);
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(`XP: ${formatter.format(+user.xp)}`, 680 - padding * 3, yPosition + userSize - padding * 3);
-        ctx.shadowBlur = 0;
-    }
-
-    const data = await canvas.encode('png');
-    return data;
 }

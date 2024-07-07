@@ -69,7 +69,7 @@ async function routes(fastify: FastifyInstance) {
             const port = packIP.split(':')[1];
             if (!guilds || !guilds.filter((guild: string) => guild === '1110754252315435070')[0]) reply.send({ status: 'OKAY', ip: false, players: false });
             if (packIP) {
-                if (ip === process.env.ORIGIN) packIP = '192.168.1.91:' + port;
+                if (ip === process.env.ORIGIN) packIP = '192.168.1.77:' + port;
                 try {
                     const server = await mc.lookup({ host: '127.0.0.1', port });
                     reply.send({ status: 'Online', ip: packIP, players: (server!.status as any).players.online, packInfo });
@@ -79,7 +79,6 @@ async function routes(fastify: FastifyInstance) {
                         const serverStatus = JSON.parse('[' + server.statusRaw.replace(/}\\{/g, '},{') + ']');
                         reply.send({ status: 'Online', ip: packIP, players: serverStatus[0].players.online, packInfo });
                     } catch (error) {
-                        console.log(error);
                         reply.send({ status: 'Offline', ip: packIP, players: false, packInfo });
                     }
                 }
