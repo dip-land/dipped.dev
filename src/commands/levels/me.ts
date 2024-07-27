@@ -2,6 +2,7 @@ import { Command } from '../../classes/Command.js';
 import { AttachmentBuilder } from 'discord.js';
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { launch } from 'puppeteer';
+import { getUser, updateUser } from '../../handlers/database.js';
 
 export default new Command({
     name: 'me',
@@ -15,6 +16,14 @@ export default new Command({
     async slashCommand({ interaction, client }) {
         if (!interaction.guildId) return;
         await interaction.reply('Loading <a:wiggle:1190127338101415957>');
+        const user = await getUser(interaction.guildId, interaction.user.id);
+        if (user && user.voice.channelID !== null)
+            await updateUser(interaction.guildId, interaction.user.id, {
+                voice: {
+                    time: user.id === '322945996931727361' ? (Date.now() - user.voice.lastJoinDate) / 60000 / 1.1 : (Date.now() - user.voice.lastJoinDate) / 60000,
+                    join: Date.now(),
+                },
+            });
 
         const canvas = createCanvas(1280, 706);
         const ctx = canvas.getContext('2d');

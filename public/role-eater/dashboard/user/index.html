@@ -277,7 +277,7 @@
         </div>
         <div id="chart">
             <div>
-                <span>Activity Last 90 Days</span>
+                <span>Activity Last 45 Days</span>
                 <div>
                     <div style="background-color: #36a2eb"></div>
                     <span>Message <i>(COUNT)</i></span>
@@ -293,6 +293,8 @@
 </div>
 <script>
     window.addEventListener('load', async () => {
+        const query = new URLSearchParams(location.search);
+        const type = query.get('type');
         const data = await (await fetch(`/api${location.pathname.replace('dashboard/', '')}`)).json();
 
         document.getElementById('userAvatar').src = data.user.avatar;
@@ -323,7 +325,7 @@
 
         const messageHistory = data.user.message.history;
         let messageWeekCount = 0;
-        for (let index = 0; index < 91; index++) {
+        for (let index = 0; index < 46; index++) {
             const day = new Date(new Date().setDate(today.getDate() - index));
             labels.push(formatter.format(day));
             const value = messageHistory.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
@@ -337,18 +339,62 @@
 
         const voiceHistory = data.user.voice.history;
         let voiceWeekCount = 0;
-        for (let index = 0; index < 91; index++) {
+        for (let index = 0; index < 46; index++) {
             const day = new Date(new Date().setDate(today.getDate() - index));
             const value = voiceHistory.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
             if (index === 0) {
-                document.getElementById('voiceActivity1d').innerHTML = numberFormatter.format(value?.time || 0).toLowerCase();
+                document.getElementById('voiceActivity1d').innerHTML = numberFormatter.format(Math.round(value?.time || 0)).toLowerCase();
             }
-            if (index < 8) voiceWeekCount = voiceWeekCount + (value?.time ?? 0);
+            if (index < 8) voiceWeekCount = voiceWeekCount + Math.round(value?.time || 0);
             voiceData.push(value?.time / 60 || 0);
         }
         document.getElementById('voiceActivity7d').innerHTML = numberFormatter.format(voiceWeekCount).toLowerCase();
 
         const ctx = document.getElementById('activityChart');
+
+        let scales = {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    display: false,
+                },
+                grid: {
+                    display: false,
+                },
+            },
+            x: {
+                ticks: {
+                    display: false,
+                },
+                grid: {
+                    display: false,
+                },
+            },
+        };
+
+        if (type === 'chart') {
+            document.getElementById('rankActivity').remove();
+            document.getElementById('activityChart').setAttribute('height', '480px');
+            scales = {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        display: true,
+                    },
+                    grid: {
+                        display: false,
+                    },
+                },
+                x: {
+                    ticks: {
+                        display: true,
+                    },
+                    grid: {
+                        display: false,
+                    },
+                },
+            };
+        }
 
         new Chart(ctx, {
             type: 'line',
@@ -376,25 +422,7 @@
                         pointStyle: false,
                     },
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            display: false,
-                        },
-                        grid: {
-                            display: false,
-                        },
-                    },
-                    x: {
-                        ticks: {
-                            display: false,
-                        },
-                        grid: {
-                            display: false,
-                        },
-                    },
-                },
+                scales,
                 plugins: {
                     legend: {
                         display: false,

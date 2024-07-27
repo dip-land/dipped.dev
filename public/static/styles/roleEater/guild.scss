@@ -13,7 +13,7 @@
     .sectionHeader {
         color: rgb(138, 145, 165);
         display: grid;
-        grid-template-columns: 48px auto 140px 80px 80px 28px !important;
+        grid-template-columns: 64px auto 90px 90px 90px !important;
         padding: 0 1rem;
         text-align: center;
         margin: -0.5rem 0;
@@ -33,28 +33,53 @@
         font-weight: bold;
         color: white;
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
 
-        &>div {
-            h1 {
-                margin: 0;
+        h1 {
+            margin: 0;
+        }
+
+        h2 {
+            margin: 0 0 0.5rem;
+
+            span {
+                color: rgb(138, 145, 165);
+                font-size: 0.9rem;
+                font-weight: 600;
+            }
+        }
+
+        #guildTop {
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+
+            #guildIcon {
+                border-radius: 0.4rem;
+                font-size: 3rem;
+                min-width: 128px;
+                min-height: 128px;
+                max-width: 128px;
+                max-height: 128px;
+                text-align: center;
+                align-content: center;
+                background-color: var(--background);
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
-            &>div {
+
+            &>div>div {
                 display: flex;
                 flex-direction: column;
             }
-        }
-    }
 
-    .caret {
-        width: 28px;
-        height: 28px;
+        }
     }
 
     .user {
         display: grid;
-        grid-template-columns: 48px calc(64px + 2rem) auto 140px 80px 80px 28px !important;
+        grid-template-columns: 64px calc(64px + 2rem) auto 90px 90px 90px !important;
         padding: 0 1rem;
         align-items: center;
         border-radius: 12px;
@@ -66,36 +91,33 @@
         -ms-user-select: none;
         user-select: none;
 
-        &.expanded {
-            height: 250px;
-        }
-
         .position {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 3rem;
-            height: 3rem;
-            background-color: rgb(45 49 60);
+            width: 64px;
+            height: 64px;
+            background-color: var(--background);
             border-radius: 8px;
             text-shadow: 0px 0px 2px rgba(0, 0, 0, 1);
+            font-size: 1.1rem;
 
-            &.gold {
-                background-color: #ffd700;
+            &.first {
+                background-color: hsl(224, 50%, 20%);
             }
 
-            &.silver {
-                background-color: #c0c0c0;
+            &.second {
+                background-color: hsl(224, 41%, 15%);
             }
 
-            &.bronze {
-                background-color: #cd7f32;
+            &.third {
+                background-color: hsl(224, 32%, 10%);
             }
         }
 
         .userAvatar {
             height: 64px;
-            border-radius: 50%;
+            border-radius: 1.5rem;
             padding: 1rem;
         }
 
@@ -119,8 +141,18 @@
             }
         }
 
-        .xp,
-        .level {
+        .username {
+            display: flex;
+            flex-direction: column;
+            font-size: 1.1rem;
+
+            span {
+                font-size: 0.9rem;
+                color: rgb(181, 187, 202);
+            }
+        }
+
+        .xp {
             text-align: center;
             font-size: 14px;
             color: rgb(181, 187, 202);
@@ -132,9 +164,9 @@
     #content {
         .sectionHeader {
             font-size: 12px;
-            padding: 0 0.5rem;
+            padding: 0 0.7rem;
             margin: -0.5rem 0;
-            grid-template-columns: 2rem auto 28px 50px 50px 20px !important;
+            grid-template-columns: 2.5rem auto 50px 50px 50px !important;
 
             h3 {
                 grid-column: span 5;
@@ -145,23 +177,28 @@
         }
 
         .user {
-            padding: 0 0.5rem;
-            grid-template-columns: 2rem calc(32px + 1rem) auto 28px 50px 50px 20px !important;
+            padding: 0 0.7rem;
+            grid-template-columns: 2.5rem 3.5rem auto 50px 50px 50px !important;
 
             .position {
-                width: auto;
-                height: 2rem;
+                width: 2.5rem;
+                height: 2.5rem;
             }
 
             .userAvatar {
-                height: 32px;
-                border-radius: 50%;
+                height: 2.5rem;
+                border-radius: 1rem;
                 padding: 0.5rem;
             }
 
             .username {
                 text-overflow: ellipsis;
                 overflow: hidden;
+                font-size: 1rem;
+
+                span {
+                    font-size: 0.8rem;
+                }
             }
 
             .role {

@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import fs from 'node:fs';
 import path from 'node:path';
 import mc from 'minecraftstatuspinger';
-import { getGuildInfo, getAllUsers, getUser } from '../handlers/database.js';
+import { getGuildInfo, getAllGuildUsers, getUser } from '../handlers/database.js';
 
 interface pack {
     name: string;
@@ -69,7 +69,7 @@ async function routes(fastify: FastifyInstance) {
             const port = packIP.split(':')[1];
             if (!guilds || !guilds.filter((guild: string) => guild === '1110754252315435070')[0]) reply.send({ status: 'OKAY', ip: false, players: false });
             if (packIP) {
-                if (ip === process.env.ORIGIN) packIP = '192.168.1.77:' + port;
+                if (ip === process.env.ORIGIN) packIP = process.env.INTERNAL_IP + port;
                 try {
                     const server = await mc.lookup({ host: '127.0.0.1', port });
                     reply.send({ status: 'Online', ip: packIP, players: (server!.status as any).players.online, packInfo });
@@ -112,9 +112,9 @@ async function routes(fastify: FastifyInstance) {
         const query = req.query as { limit: string };
         const guildData = await getGuildInfo(serverID);
         if (!guildData) return reply.code(401), reply.send([]);
-        const users = await getAllUsers(serverID, { sort: { xp: 'desc' }, limit: +query.limit || undefined });
-        const message = await getAllUsers(serverID, { sort: { 'message.count': 'desc' }, limit: +query.limit || undefined });
-        const voice = await getAllUsers(serverID, { sort: { 'voice.time': 'desc' }, limit: +query.limit || undefined });
+        const users = await getAllGuildUsers(serverID, { sort: { xp: 'desc' }, limit: +query.limit || undefined });
+        const message = await getAllGuildUsers(serverID, { sort: { 'message.count': 'desc' }, limit: +query.limit || undefined });
+        const voice = await getAllGuildUsers(serverID, { sort: { 'voice.time': 'desc' }, limit: +query.limit || undefined });
         const client = (await import('../index.js')).client;
         const apiGuild = client.isReady() ? await client.guilds.fetch(serverID) : undefined;
         let parsedUsers = [];
@@ -123,22 +123,34 @@ async function routes(fastify: FastifyInstance) {
         if (users) {
             for (const user of users) {
                 if (!apiGuild) continue;
-                const apiUser = await apiGuild.members.fetch(user.id);
-                parsedUsers.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+                try {
+                    const apiUser = await apiGuild.members.fetch(user.id);
+                    parsedUsers.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+                } catch (error) {
+                    continue;
+                }
             }
         }
         if (message) {
             for (const user of message) {
                 if (!apiGuild) continue;
-                const apiUser = await apiGuild.members.fetch(user.id);
-                parsedMessage.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+                try {
+                    const apiUser = await apiGuild.members.fetch(user.id);
+                    parsedMessage.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+                } catch (error) {
+                    continue;
+                }
             }
         }
         if (voice) {
             for (const user of voice) {
                 if (!apiGuild) continue;
-                const apiUser = await apiGuild.members.fetch(user.id);
-                parsedVoice.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+                try {
+                    const apiUser = await apiGuild.members.fetch(user.id);
+                    parsedVoice.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+                } catch (error) {
+                    continue;
+                }
             }
         }
         return {
@@ -157,9 +169,9 @@ async function routes(fastify: FastifyInstance) {
         if (!guildData) return reply.code(401), reply.send([]);
         const user = await getUser(serverID, userID);
         if (!user) return reply.code(401), reply.send([]);
-        const xp = await getAllUsers(serverID, { sort: { xp: 'desc' } });
-        const message = await getAllUsers(serverID, { sort: { 'message.count': 'desc' } });
-        const voice = await getAllUsers(serverID, { sort: { 'voice.time': 'desc' } });
+        const xp = await getAllGuildUsers(serverID, { sort: { xp: 'desc' } });
+        const message = await getAllGuildUsers(serverID, { sort: { 'message.count': 'desc' } });
+        const voice = await getAllGuildUsers(serverID, { sort: { 'voice.time': 'desc' } });
         const overallRank = xp && user ? xp.findIndex((v) => v.id === user?.id) + 1 : -1;
         const messageRank = message && user ? message.findIndex((v) => v.id === user?.id) + 1 : -1;
         const voiceRank = voice && user ? voice.findIndex((v) => v.id === user?.id) + 1 : -1;

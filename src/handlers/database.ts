@@ -1,31 +1,41 @@
-import { Document, FindOneAndUpdateOptions, MongoClient, WithId } from 'mongodb';
+import { Document, Filter, FindOneAndUpdateOptions, MongoClient, WithId } from 'mongodb';
 import { Client } from '../classes/Client';
 import { Client as DjsClient, Snowflake } from 'discord.js';
 import { Guild, User, UserProjectionOptions, UserSortOptions } from '../types/database.type.js';
 
-const botDatabase = new MongoClient('mongodb://localhost:27017/DipLand', { compressors: ['snappy', 'zlib'] }).db();
+const database = new MongoClient('mongodb://localhost:27017/DipLand', { compressors: ['snappy', 'zlib'] }).db();
 
 export function getCollection(guild: Snowflake) {
-    const collection = botDatabase.collection(guild);
+    const collection = database.collection(guild);
     if (!collection.collectionName) return false;
     return collection;
 }
 
 export function getCollections() {
-    const collections = botDatabase.collections();
+    const collections = database.collections();
     return collections;
 }
 
 export async function createCollection(guild: Snowflake) {
-    const collection = getCollection(guild) || (await botDatabase.createCollection(guild));
+    const collection = getCollection(guild) || (await database.createCollection(guild));
+    const client = (await import('../index.js')).client;
+    if (client.isReady()) {
+        const apiGuild = await client.guilds.fetch(guild);
+        collection.findOneAndUpdate(
+            { id: guild },
+            {
+                $set: {
+                    id: guild,
+                    name: apiGuild.name,
+                    icon: apiGuild.iconURL(),
+                    noStatsChannels: [],
+                    adminRoles: [],
+                },
+            },
+            { upsert: true }
+        );
+    }
     return collection;
-}
-
-export async function createGuildInfo(guild: Snowflake, data: Guild<false>) {
-    const collection = getCollection(guild);
-    if (!collection) return false;
-    const document = await collection.insertOne(data);
-    return document;
 }
 
 export async function editGuildInfo(guild: Snowflake, data: Guild<true>) {
@@ -69,22 +79,36 @@ export async function getUser(guild: Snowflake, user: User<false>['id']) {
     return document;
 }
 
-export async function getAllUsers(guild: Snowflake, options?: { sort?: UserSortOptions; project?: UserProjectionOptions; limit?: number }) {
+export async function getAllUsers(options?: { filter?: Filter<Document>; sort?: UserSortOptions; project?: UserProjectionOptions; limit?: number }) {
+    const collections = getCollections();
+    const documents = [];
+    for (const collection of await collections) {
+        const users = await collection
+            .find(options?.filter ? options.filter : { avatar: { $exists: true } }, {
+                limit: options?.limit,
+                projection: options?.project,
+                sort: options?.sort ? options.sort : { id: 1 },
+            })
+            .toArray();
+        for (const user of users) {
+            let newUser = user;
+            newUser.guild = collection.collectionName;
+            documents.push(newUser);
+        }
+    }
+    return documents;
+}
+
+export async function getAllGuildUsers(guild: Snowflake, options?: { filter?: Filter<Document>; sort?: UserSortOptions; project?: UserProjectionOptions; limit?: number }) {
     const collection = getCollection(guild);
     if (!collection) return false;
-    if (options?.project) {
-        const documents = collection
-            .find({ avatar: { $exists: true } }, options?.limit ? { limit: options.limit } : {})
-            .sort(options.sort ?? { id: 1 })
-            .project(options.project);
-        return documents.toArray();
-    } else {
-        const documents = collection
-            .find({ avatar: { $exists: true } }, options?.limit ? { limit: options.limit } : {})
-            .sort(options?.sort ?? { id: 1 })
-            .toArray();
-        return documents;
-    }
+    return await collection
+        .find(options?.filter ? options.filter : { avatar: { $exists: true } }, {
+            limit: options?.limit,
+            projection: options?.project,
+            sort: options?.sort ? options.sort : { id: 1 },
+        })
+        .toArray();
 }
 
 export async function editUser(guild: Snowflake, user: User<false>['id'], data: User<true>, options?: FindOneAndUpdateOptions) {
@@ -94,7 +118,7 @@ export async function editUser(guild: Snowflake, user: User<false>['id'], data: 
     return document;
 }
 
-export async function editMessageHistory(guild: Snowflake, user: User<false>['id'], options?: FindOneAndUpdateOptions) {
+async function editMessageHistory(guild: Snowflake, user: User<false>['id'], options?: FindOneAndUpdateOptions) {
     const date = new Date().toDateString();
     const collection = getCollection(guild);
     if (!collection) return false;
@@ -107,7 +131,7 @@ export async function editMessageHistory(guild: Snowflake, user: User<false>['id
     }
 }
 
-export async function editVoiceHistory(guild: Snowflake, user: User<false>['id'], time: number, options?: FindOneAndUpdateOptions) {
+async function editVoiceHistory(guild: Snowflake, user: User<false>['id'], time: number, options?: FindOneAndUpdateOptions) {
     const date = new Date().toDateString();
     const collection = getCollection(guild);
     if (!collection) return false;
@@ -117,6 +141,27 @@ export async function editVoiceHistory(guild: Snowflake, user: User<false>['id']
         await collection.updateOne({ id: user, 'voice.history.date': date }, { $inc: { 'voice.history.$.time': time } });
     } else {
         await collection.updateOne({ id: user }, { $push: { 'voice.history': { date, time } as any } });
+    }
+}
+
+export async function updateUser(
+    guild: Snowflake,
+    user: User<false>['id'],
+    data: { voice?: { time?: number; join?: number | null; channel?: string | null }; xp?: string; message?: number }
+) {
+    if (data.message) {
+        await incrementUser(guild, user, { 'message.count': data.message, xp: data.message });
+        editMessageHistory(guild, user);
+    }
+    if (data.voice && data.voice.time) {
+        await incrementUser(guild, user, { 'voice.time': data.voice.time, xp: data.voice.time });
+        await editVoiceHistory(guild, user, data.voice.time);
+    }
+    if (data.voice && (data.voice.join || data.voice.join === null)) {
+        await editUser(guild, user, { 'voice.lastJoinDate': data.voice.join });
+    }
+    if (data.voice && (data.voice.channel || data.voice.channel === null)) {
+        await editUser(guild, user, { 'voice.channelID': data.voice.channel });
     }
 }
 
@@ -167,7 +212,6 @@ export async function messageCreate(client: Client | DjsClient, guild: Snowflake
             xp: 1,
         });
     } else {
-        await incrementUser(guild, user, { 'message.count': 1, xp: 1 });
-        editMessageHistory(guild, user);
+        await updateUser(guild, user, { message: 1 });
     }
 }

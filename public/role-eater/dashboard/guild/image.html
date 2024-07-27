@@ -6,9 +6,11 @@
         --background-4: rgb(45, 49, 60);
         color: hsl(224, 16%, 87%);
     }
+
     * {
         box-sizing: border-box !important;
     }
+
     body {
         background-color: var(--background-3);
         width: 1280px !important;
@@ -17,6 +19,7 @@
             apple color emoji, segoe ui emoji, segoe ui symbol, noto color emoji;
         font-size: 1.5rem;
     }
+
     #main {
         width: 1280px !important;
         background-color: var(--background);
@@ -25,6 +28,7 @@
         flex-direction: column;
         overflow: hidden;
     }
+
     #top {
         width: 100%;
         height: 130px;
@@ -35,6 +39,7 @@
         gap: 20px;
         justify-content: flex-end;
     }
+
     #top #server {
         margin-right: auto;
         align-items: flex-start;
@@ -43,16 +48,19 @@
         font-size: 1.8rem;
         color: hsl(224, 13%, 59%);
     }
+
     #serverIcon {
         border-radius: 30px;
         height: 90px;
     }
+
     #server > div {
         margin-left: 0.8rem;
         display: flex;
         height: 100%;
         align-items: center;
     }
+
     #serverName {
         font-weight: bold;
         font-size: 3.5rem;
@@ -69,9 +77,11 @@
         display: flex;
         align-items: end;
     }
+
     #top > .date > div {
         width: fit-content;
     }
+
     #top > .date > div:first-child {
         background-color: var(--background-4);
         padding: 5px 10px;
@@ -83,6 +93,7 @@
         left: 10px;
         box-shadow: 2px 2px 7px 2px #00000080;
     }
+
     #top > .date > div:last-child {
         background-color: var(--background-3);
         font-size: 1.75rem;
@@ -91,6 +102,7 @@
         z-index: 0;
         box-shadow: 2px 2px 7px 2px #00000080;
     }
+
     #bottom {
         width: 100%;
         height: 100%;
@@ -100,12 +112,14 @@
         box-sizing: border-box;
         gap: 20px;
     }
+
     #bottom > div {
         height: 50%;
         display: flex;
         flex-direction: row;
         gap: 20px;
     }
+
     .user {
         height: 131px;
         background-color: var(--background-3);
@@ -116,9 +130,10 @@
         align-items: center;
         padding: 20px;
     }
+
     .user > :nth-child(1) {
         border-radius: 8px;
-        background-color: var(--background-2);
+        background-color: var(--background);
         width: 90px;
         height: 90px;
         min-width: 90px;
@@ -130,10 +145,24 @@
         font-weight: bold;
         padding: 12px;
     }
+
+    .user > .first {
+        background-color: hsl(224, 50%, 20%);
+    }
+
+    .user > .second {
+        background-color: hsl(224, 41%, 15%);
+    }
+
+    .user > .third {
+        background-color: hsl(224, 32%, 10%);
+    }
+
     .user > :nth-child(2) {
         border-radius: 30px;
         height: 90px;
     }
+
     .user > :nth-child(3) {
         display: flex;
         flex-direction: column;
@@ -143,10 +172,12 @@
         font-size: 2.2rem;
         font-weight: bold;
     }
+
     .user > :nth-child(3) > :nth-child(2) {
         color: hsl(224, 13%, 59%);
         font-size: 1.7rem;
     }
+
     .user > :nth-child(4) {
         display: flex;
         flex-direction: column;
@@ -173,7 +204,13 @@
 </div>
 <script>
     window.addEventListener('load', async () => {
-        const data = await (await fetch(`/api${location.pathname.replace('dashboard/', '').replace('.png', '')}?limit=6`)).json();
+        const data = await (
+            await fetch(`/api$ {
+                    location.pathname.replace('dashboard/', '').replace('.png', '')
+                }
+
+                ?limit=6`)
+        ).json();
         console.log(data);
         document.getElementById('serverIcon').src = data.apiGuild.iconURL;
         document.getElementById('serverName').innerHTML = data.apiGuild.name;
@@ -181,20 +218,32 @@
         const query = new URLSearchParams(location.search);
         const type = query.get('type');
         document.getElementById('type').innerHTML = type?.toUpperCase() || 'OVERALL';
+
         for (const index in type === 'overall' || type === null ? data.users : type === 'voice' ? data.voice : data.message) {
             const user = type === 'overall' || type === null ? data.users[index] : type === 'voice' ? data.voice[index] : data.message[index];
-            document.getElementById('bottom').innerHTML += `<div class="user">
-            <span>${+index + 1}</span>
-            <img src="${user.avatar}" />
-            <div>
-                <span>${user.nickname}</span>
-                <span>${user.username}</span>
-            </div>
-            <div>
-                <span>${user.message.count.toLocaleString()} Messages</span>
-                <span>${Number(user.voice.time).toLocaleString()} Voice Minutes</span>
-            </div>
-        </div>`;
+            const pos = +index + 1;
+
+            document.getElementById('bottom').innerHTML += `<div class="user"> <span class="${pos === 1 ? 'first' : pos === 2 ? 'second' : pos === 3 ? 'third' : ''}">$ {
+                pos
+            }
+
+            </span> <img src="${user.avatar}"/> <div> <span>$ {
+                user.nickname
+            }
+
+            </span> <span>$ {
+                user.username
+            }
+
+            </span> </div> <div> <span>$ {
+                user.message.count.toLocaleString()
+            }
+
+            Messages</span> <span>$ {
+                Math.round(+user.voice.time).toLocaleString()
+            }
+
+            Voice Minutes</span> </div> </div>`;
         }
     });
 </script>

@@ -12,7 +12,7 @@ export interface Role {
 interface BaseGuild {
     icon: string | null;
     name: string;
-    xpChannels: string[];
+    noStatsChannels: string[];
     adminRoles: Role[];
 }
 

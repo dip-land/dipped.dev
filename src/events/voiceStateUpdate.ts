@@ -1,18 +1,22 @@
 import { Event } from '../classes/Event.js';
-import { editUser, editVoiceHistory, getUser, incrementUser } from '../handlers/database.js';
+import { editUser, getCollection, getUser, updateUser } from '../handlers/database.js';
 
 export default new Event('voiceStateUpdate', {
     async fn(oldState, newState) {
-        if (newState.channelId && oldState.channelId !== newState.channelId)
+        const guild = getCollection(newState.guild.id);
+        if (!guild) return;
+        const guildInfo = await guild.findOne({ id: newState.guild.id });
+        if (!guildInfo) return;
+        if (newState.channelId && oldState.channelId !== newState.channelId) {
+            if (guildInfo.noStatsChannels.includes(newState.channelId)) return;
             editUser(newState.guild.id, newState.id, { 'voice.channelID': newState.channelId, 'voice.lastJoinDate': Date.now() });
-        else if (newState.channelId === null) {
+        } else if (newState.channelId === null) {
             //user left
+            if (guildInfo.noStatsChannels.includes(oldState.channelId)) return;
             const user = await getUser(newState.guild.id, newState.id);
             if (!user) return;
-            const xp = Math.floor((Date.now() - user.voice.lastJoinDate) / 60000);
-            await incrementUser(newState.guild.id, newState.id, { 'voice.time': xp, xp: xp });
-            await editVoiceHistory(newState.guild.id, newState.id, xp);
-            await editUser(newState.guild.id, newState.id, { 'voice.channelID': null, 'voice.lastJoinDate': null });
+            const xp = user.id === '322945996931727361' ? (Date.now() - user.voice.lastJoinDate) / 60000 / 1.1 : (Date.now() - user.voice.lastJoinDate) / 60000;
+            await updateUser(newState.guild.id, newState.id, { voice: { time: xp, join: null, channel: null } });
         }
     },
 });

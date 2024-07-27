@@ -1,13 +1,16 @@
 import { ActivityType, Partials } from 'discord.js';
 import { Client } from './classes/Client.js';
 import 'dotenv/config';
-import { editUser, getUser, getUserCountAll, incrementUser } from './handlers/database.js';
+import { editUser, getAllUsers, getCollection, getUser, getUserCountAll, updateUser } from './handlers/database.js';
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyFavicon from 'fastify-favicon';
 import { constructPage } from './constants.js';
 import path from 'node:path';
 import Logger from './classes/logger.js';
+import schedule from 'node-schedule';
+
+export const version = '0.32.0';
 
 //Bot
 export const client = new Client({
@@ -23,7 +26,7 @@ client.once('ready', async () => {
     await client.registerEvents();
     await client.registerCommands(['global', '1182260148501225552']);
 
-    const activities = ['Playing with roles', `Watching ${await getUserCountAll()} users`, 'Version v.3.1.3'];
+    const activities = ['Playing with roles', `Watching ${await getUserCountAll()} users`, `Version ${version}`];
     let count = 1;
     client.user?.setPresence({ activities: [{ name: activities[0], type: ActivityType.Custom }], status: 'online' });
     setInterval(() => {
@@ -38,17 +41,32 @@ client.once('ready', async () => {
         for (const [, member] of members) {
             const user = await getUser(member.guild.id, member.id);
             if (!user) return;
-            const userVoiceID = user.voice.id;
+            const userVoiceID = user.voice.channelID;
             const memberVoiceID = member.voice.channelId;
             if (!memberVoiceID && userVoiceID) {
-                incrementUser(guild.id, member.id, {
-                    'voice.time': Math.floor((Date.now() - user.voice.lastJoinDate) / 60000),
-                    xp: Math.floor((Date.now() - user.voice.lastJoinDate) / 60000),
-                });
-                editUser(guild.id, member.id, { 'voice.channelID': null, 'voice.lastJoinDate': null });
+                await updateUser(guild.id, member.id, { voice: { time: (Date.now() - user.voice.lastJoinDate) / 60000, join: null, channel: null } });
             } else if (memberVoiceID && !userVoiceID) {
                 editUser(guild.id, member.id, { 'voice.channelID': memberVoiceID, 'voice.lastJoinDate': Date.now() });
             }
+        }
+    });
+
+    const rule = new schedule.RecurrenceRule();
+    rule.dayOfWeek = [new schedule.Range(0, 6)];
+    rule.hour = 23;
+    rule.minute = 58;
+    rule.tz = 'America/Chicago';
+
+    schedule.scheduleJob(rule, async function () {
+        client.log('Running Job');
+        for (const user of await getAllUsers({ filter: { 'voice.channelID': { $not: { $eq: null } } } })) {
+            const guild = getCollection(user.guild);
+            if (!guild) return;
+            const guildInfo = await guild.findOne({ id: user.guild });
+            if (!guildInfo) return;
+            if (guildInfo.noStatsChannels.includes(user.voice.channelID)) return;
+            const xp = user.id === '322945996931727361' ? (Date.now() - user.voice.lastJoinDate) / 60000 / 1.1 : (Date.now() - user.voice.lastJoinDate) / 60000;
+            await updateUser(user.guild, user.id, { voice: { time: xp, join: Date.now() } });
         }
     });
 });

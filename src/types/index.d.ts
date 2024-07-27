@@ -1,15 +1,16 @@
-import type { Client as customClient } from '../classes/Client';
+import type { Client } from '../classes/Client';
 
 declare global {
     namespace NodeJS {
         interface ProcessEnv {
-            TOKEN: string;
             CLIENT_SECRET: string;
-            WEB_PORT: string;
+            COMMANDS_PATH: string;
+            EVENTS_PATH: string;
             FONTS: string;
-            E621_USERNAME: string;
-            E621_KEY: string;
-            GELBOORU_KEY: string;
+            INTERNAL_IP: string;
+            ORIGIN: string;
+            TOKEN: string;
+            WEB_PORT: string;
         }
     }
 }
