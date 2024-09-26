@@ -4,15 +4,14 @@
         "target": "ESNext",
         "outDir": "./dist/",
         "moduleResolution": "node",
-        "importHelpers": true,
-        "experimentalDecorators": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "strict": true,
         "removeComments": true,
         "typeRoots": ["node_modules/@types", "src/types"],
-        "baseUrl": "."
+        "baseUrl": ".",
+        "skipLibCheck": true
     },
     "include": ["src/**/*"],
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules/*", "public/*"]
 }

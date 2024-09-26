@@ -44,10 +44,6 @@ export class Command {
     public button?: (interaction: ButtonInteraction) => Promise<unknown>;
     public selectMenu?: (interaction: AnySelectMenuInteraction) => Promise<unknown>;
     public modal?: (interaction: Message, fields: Collection<string, TextInputComponent>) => Promise<unknown>;
-    public webTrigger?: (
-        message: { type: string; status: string; name?: string; color?: string; user?: string; guild?: string; role?: string },
-        client: Client
-    ) => Promise<unknown>;
     constructor(data: CommandData) {
         this.type = data.type;
         this.name = data.name;
@@ -71,7 +67,6 @@ export class Command {
         this.button = data.button;
         this.selectMenu = data.selectMenu;
         this.modal = data.modal;
-        this.webTrigger = data.webTrigger;
     }
     public get applicationData() {
         return {
@@ -137,7 +132,6 @@ interface CommandData {
     button?: (interaction: ButtonInteraction) => Promise<unknown>;
     selectMenu?: (interaction: AnySelectMenuInteraction) => Promise<unknown>;
     modal?: (interaction: Message, fields: Collection<string, TextInputComponent>) => Promise<unknown>;
-    webTrigger?: (message: { type: string; status: string; name?: string; color?: string; user?: string; guild?: string; role?: string }, client: Client) => Promise<unknown>;
 }
 
 //https://discord.com/developers/docs/reference#locales

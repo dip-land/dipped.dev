@@ -1,93 +1,126 @@
 import { FastifyInstance } from 'fastify';
 import fs from 'node:fs';
-import path from 'node:path';
-import mc from 'minecraftstatuspinger';
+import path, { parse } from 'node:path';
 import { getGuildInfo, getAllGuildUsers, getUser } from '../handlers/database.js';
+import axios from 'axios';
+import { WithId } from 'mongodb';
+import { User } from 'src/types/database.type.js';
 
-interface pack {
+export interface mcssApiServers {
+    serverId: string;
+    status: 0 | 1;
     name: string;
-    identifier: string;
-    status: string;
-    iconType: string;
+    description: string;
+    pathToFolder: string;
+    folderName: string;
+    type: string;
+    creationDate: string;
+    isSetToAutoStart: boolean;
+    forceSaveOnStop: boolean;
+    keepOnline: 0 | 1;
+    javaAllocatedMemory: number;
+    javaStartupLine: string;
+    serverPermissions: [unknown];
 }
+
+export interface server {
+    id: mcssApiServers['serverId'];
+    online: boolean;
+    ip?: string;
+    status: 'current' | 'archived' | 'unavailable';
+    name: mcssApiServers['name'];
+    identifier: mcssApiServers['folderName'];
+    players?: number;
+    download?: boolean;
+}
+
+export const local = 'http://127.0.0.1';
+export const mcssHeaders = { apiKey: process.env.MCSS_KEY };
 
 async function routes(fastify: FastifyInstance) {
     fastify.get('/minecraft/servers', async (req, reply) => {
-        const dir = fs.readdirSync(path.join(process.cwd(), 'public/minecraft/servers'));
-        const sort: 'asc' | 'desc' = (req.headers.sort as 'asc' | 'desc') || 'asc';
-        const status: 'current' | 'archived' | 'all' = (req.headers.status as 'current' | 'archived' | 'all') || 'all';
-        const sorter = () => (a: pack | undefined, b: pack | undefined) => {
+        const data = await axios(`${local}:${process.env.MCSS_PORT}/api/v2/servers`, { responseType: 'json', headers: mcssHeaders });
+        if (data.status !== 200) return { status: 'unavailable' };
+        let sort: 'asc' | 'desc' | 'na' = req.headers.sort as 'asc' | 'desc' | 'na';
+        let status: 'current' | 'archived' | 'all' | 'na' = req.headers.status as 'current' | 'archived' | 'all' | 'na';
+        const sorter = () => (a: server | undefined, b: server | undefined) => {
             if (!a || !b) return -1;
             if (sort === 'asc' && a['name'].toLowerCase() > b['name'].toLowerCase()) return 1;
+            else if (sort === 'desc' && a['name'].toLowerCase() < b['name'].toLowerCase()) return 1;
+            else if (sort === 'na') return 1;
             else return -1;
         };
-        const data = dir
-            .map((v) => {
-                if (v === 'index.html') return;
-                const packInfo = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public/minecraft/servers', `${v}/packInfo.json`), { encoding: 'utf8', flag: 'r' }));
+        const servers = data.data
+            .map((server: mcssApiServers) => {
+                const description = JSON.parse(server.description);
                 return {
-                    name: packInfo.name as string,
-                    identifier: v,
-                    status: packInfo.status as string,
-                    iconType: packInfo.pack.icon as string,
-                };
+                    id: server.serverId,
+                    status: description.status,
+                    online: server.status ? true : false,
+                    name: server.name,
+                    identifier: server.folderName,
+                } as server;
             })
-            .filter((v) => v)
+            .filter((server: server) => (status === 'all' || status === 'na' ? true : server.status === status))
             .sort(sorter());
-        const packs = data.map((server) => {
-            if (!server) return '';
-            if (status === 'current') {
-                if (server.status !== 'current') return '';
-                return `<a class="server ${server.status}" href="/minecraft/servers/${server.identifier}">
-                <img src="/minecraft/servers/${server.identifier}/packIcon.${server.iconType}" width="140px" height="140px" alt="${server.name} Pack Icon" /><span>${server.name}</span>
-                </a>`;
-            } else if (status === 'archived') {
-                if (server.status !== 'archive') return '';
-                return `<a class="server ${server.status}" href="/minecraft/servers/${server.identifier}">
-                <img src="/minecraft/servers/${server.identifier}/packIcon.${server.iconType}" width="140px" height="140px" alt="${server.name} Pack Icon" /><span>${server.name}</span>
-                </a>`;
-            } else {
-                return `<a class="server ${server.status}" href="/minecraft/servers/${server.identifier}">
-                <img src="/minecraft/servers/${server.identifier}/packIcon.${server.iconType}" width="140px" height="140px" alt="${server.name} Pack Icon" /><span>${server.name}</span>
-                </a>`;
-            }
+        const packs = servers.map((server: server) => {
+            return `<a class="server ${server.status}" href="/minecraft/${server.identifier}">
+            <img src="/api/minecraft/icons/${server.id}" width="140px" height="140px" alt="${server.name} Icon" /><span>${server.name}</span></a>`;
         });
-        reply.send({
-            status: 'HOME',
-            data,
-            html: packs.join(''),
-        });
+        reply.send({ status: 'HOME', data: servers, html: packs.join('') });
     });
 
     fastify.get('/minecraft/servers/:server', async (req, reply) => {
         const guilds = req.headers.guilds ? JSON.parse(`${req.headers.guilds}`) : false;
-        const server = (req.params as { server: string }).server;
-        if (fs.existsSync(path.join(process.cwd(), 'public/minecraft/servers', `${server}`))) {
-            const ip = req.headers['cf-connecting-ip'] || 'localhost';
-            const packInfo = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'public/minecraft/servers', `${server}/packInfo.json`), { encoding: 'utf8', flag: 'r' }));
-            let packIP = packInfo.server.ip;
-            const port = packIP.split(':')[1];
-            if (!guilds || !guilds.filter((guild: string) => guild === '1110754252315435070')[0]) reply.send({ status: 'OKAY', ip: false, players: false });
-            if (packIP) {
-                if (ip === process.env.ORIGIN) packIP = process.env.INTERNAL_IP + port;
-                try {
-                    const server = await mc.lookup({ host: '127.0.0.1', port });
-                    reply.send({ status: 'Online', ip: packIP, players: (server!.status as any).players.online, packInfo });
-                } catch (error) {
-                    try {
-                        const server = await mc.lookup({ host: '127.0.0.1', port, disableJSONParse: true });
-                        const serverStatus = JSON.parse('[' + server.statusRaw.replace(/}\\{/g, '},{') + ']');
-                        reply.send({ status: 'Online', ip: packIP, players: serverStatus[0].players.online, packInfo });
-                    } catch (error) {
-                        reply.send({ status: 'Offline', ip: packIP, players: false, packInfo });
-                    }
-                }
-            } else {
-                reply.send({ status: 'Archived', ip: packIP, players: false, packInfo });
-            }
-        } else {
+        const serverData = (await axios(`${local}:${process.env.MCSS_PORT}/api/v2/servers`, { responseType: 'json', headers: mcssHeaders })).data as Array<mcssApiServers>;
+        const serverMappings = serverData
+            .map((value) => {
+                return { id: value.serverId, name: value.folderName };
+            })
+            .filter((value) => value.name === (req.params as { server: string }).server)[0];
+        try {
+            const server = (await axios(`${local}:${process.env.MCSS_PORT}/api/v2/servers/${serverMappings?.id}`, { responseType: 'json', headers: mcssHeaders })).data;
+            const stats = (await axios(`${local}:${process.env.MCSS_PORT}/api/v2/servers/${serverMappings?.id}/stats`, { responseType: 'json', headers: mcssHeaders })).data;
+            const { status, port } = JSON.parse(server.description);
+            let packIP = (req.headers['cf-connecting-ip'] || 'localhost') === process.env.ORIGIN ? `${process.env.INTERNAL_IP}:${port}` : `${process.env.EXTERNAL_IP}:${port}`;
+            const download = fs.existsSync(path.join(server.pathToFolder, 'world.zip'));
+            reply.send({
+                id: server.serverId,
+                status: status,
+                online: server.status ? true : false,
+                ip: guilds && guilds.filter((guild: string) => guild === '1110754252315435070')[0] && port ? packIP : undefined,
+                name: server.name,
+                identifier: server.folderName,
+                players: stats?.latest?.playersOnline || 0,
+                download,
+            });
+        } catch (error) {
             reply.code(404);
-            return reply.send({ status: 'NOT FOUND' });
+            return reply.send({ status: 'unavailable' });
+        }
+    });
+
+    fastify.get('/minecraft/icons/:server', async (req, reply) => {
+        const server = (req.params as { server: string }).server;
+        const data = await axios(`${local}:${process.env.MCSS_PORT}/api/v2/servers/${server}`, { responseType: 'json', headers: mcssHeaders });
+        if (data.status !== 200) return { status: 'unavailable' };
+        try {
+            const file = fs.readFileSync(path.join(data.data.pathToFolder, 'server-icon.png'));
+            return reply.header('Content-Disposition', `attachment; filename=${data.data.folderName}.png`).type('image/png').send(file);
+        } catch (error) {
+            return;
+        }
+    });
+
+    fastify.get('/minecraft/worlds/:server', async (req, reply) => {
+        const server = (req.params as { server: string }).server;
+        const data = await axios(`${local}:${process.env.MCSS_PORT}/api/v2/servers/${server}`, { responseType: 'json', headers: mcssHeaders });
+        if (data.status !== 200) return { status: 'unavailable' };
+        if (fs.existsSync(path.join(data.data.pathToFolder, 'world.zip'))) {
+            const file = fs.createReadStream(path.join(data.data.pathToFolder, 'world.zip'));
+            return reply.header('Content-Disposition', `attachment; filename=${data.data.folderName}_world.zip`).type('application/zip').send(file);
+        } else {
+            reply.code(400).send();
         }
     });
 
@@ -107,86 +140,49 @@ async function routes(fastify: FastifyInstance) {
         return content;
     });
 
-    fastify.get('/role-eater/:serverID', async (req, reply) => {
-        const serverID = (req.params as { serverID: string }).serverID;
-        const query = req.query as { limit: string };
-        const guildData = await getGuildInfo(serverID);
-        if (!guildData) return reply.code(401), reply.send([]);
-        const users = await getAllGuildUsers(serverID, { sort: { xp: 'desc' }, limit: +query.limit || undefined });
-        const message = await getAllGuildUsers(serverID, { sort: { 'message.count': 'desc' }, limit: +query.limit || undefined });
-        const voice = await getAllGuildUsers(serverID, { sort: { 'voice.time': 'desc' }, limit: +query.limit || undefined });
+    fastify.get('/role-eater/:guildID', async (req, reply) => {
+        const guildID = (req.params as { guildID: string }).guildID;
+        const query = req.query as { limit: string; sort: string };
+        if (!query.sort) query.sort = 'users';
+        const guildInfo = await getGuildInfo(guildID);
+        if (!guildInfo) return reply.code(401), reply.send([]);
+        const users = (await getAllGuildUsers(guildID, { sort: { total: 'desc' }, limit: +query.limit || undefined })) as Array<WithId<User<false>>>;
         const client = (await import('../index.js')).client;
-        const apiGuild = client.isReady() ? await client.guilds.fetch(serverID) : undefined;
-        let parsedUsers = [];
-        let parsedMessage = [];
-        let parsedVoice = [];
-        if (users) {
-            for (const user of users) {
-                if (!apiGuild) continue;
-                try {
-                    const apiUser = await apiGuild.members.fetch(user.id);
-                    parsedUsers.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
-                } catch (error) {
-                    continue;
-                }
-            }
-        }
-        if (message) {
-            for (const user of message) {
-                if (!apiGuild) continue;
-                try {
-                    const apiUser = await apiGuild.members.fetch(user.id);
-                    parsedMessage.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
-                } catch (error) {
-                    continue;
-                }
-            }
-        }
-        if (voice) {
-            for (const user of voice) {
-                if (!apiGuild) continue;
-                try {
-                    const apiUser = await apiGuild.members.fetch(user.id);
-                    parsedVoice.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
-                } catch (error) {
-                    continue;
-                }
+        const apiGuild = client.isReady() ? await client.guilds.fetch(guildID) : undefined;
+        const parsedUsers = [];
+        const sort = (a: WithId<User<false>>, b: WithId<User<false>>) => {
+            return query.sort === 'voice' ? b.voice.time - a.voice.time : query.sort === 'message' ? b.message.count - a.message.count : b.total - a.total;
+        };
+        for (const user of users.sort(sort)) {
+            if (!apiGuild) continue;
+            try {
+                const apiUser = await apiGuild.members.fetch(user.id);
+                parsedUsers.push(Object.assign({}, user, { nickname: apiUser.nickname || apiUser.user.displayName, username: apiUser.user.username }));
+            } catch (error) {
+                continue;
             }
         }
         return {
-            guild: guildData,
+            guild: guildInfo,
             apiGuild,
             users: parsedUsers,
-            message: parsedMessage,
-            voice: parsedVoice,
         };
     });
 
-    fastify.get('/role-eater/:serverID/:userID', async (req, reply) => {
-        const serverID = (req.params as { serverID: string }).serverID;
+    fastify.get('/role-eater/:guildID/:userID', async (req, reply) => {
+        const guildID = (req.params as { guildID: string }).guildID;
         const userID = (req.params as { userID: string }).userID;
-        const guildData = await getGuildInfo(serverID);
+        const guildData = await getGuildInfo(guildID);
         if (!guildData) return reply.code(401), reply.send([]);
-        const user = await getUser(serverID, userID);
+        const user = await getUser(guildID, userID);
         if (!user) return reply.code(401), reply.send([]);
-        const xp = await getAllGuildUsers(serverID, { sort: { xp: 'desc' } });
-        const message = await getAllGuildUsers(serverID, { sort: { 'message.count': 'desc' } });
-        const voice = await getAllGuildUsers(serverID, { sort: { 'voice.time': 'desc' } });
-        const overallRank = xp && user ? xp.findIndex((v) => v.id === user?.id) + 1 : -1;
-        const messageRank = message && user ? message.findIndex((v) => v.id === user?.id) + 1 : -1;
-        const voiceRank = voice && user ? voice.findIndex((v) => v.id === user?.id) + 1 : -1;
         const client = (await import('../index.js')).client;
         if (client.isReady()) {
             return {
                 guild: guildData,
                 user,
                 apiUser: await client.users.fetch(userID),
-                apiMember: await (await client.guilds.fetch(serverID)).members.fetch(userID),
-                ranks: {
-                    overallRank,
-                    messageRank,
-                    voiceRank,
-                },
+                apiMember: await (await client.guilds.fetch(guildID)).members.fetch(userID),
             };
         } else {
             return {
@@ -195,7 +191,6 @@ async function routes(fastify: FastifyInstance) {
                 user,
                 apiUser: {},
                 apiMember: {},
-                ranks: {},
             };
         }
     });

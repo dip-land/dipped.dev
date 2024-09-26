@@ -15,7 +15,7 @@ export default new Event('voiceStateUpdate', {
             if (guildInfo.noStatsChannels.includes(oldState.channelId)) return;
             const user = await getUser(newState.guild.id, newState.id);
             if (!user) return;
-            const xp = user.id === '322945996931727361' ? (Date.now() - user.voice.lastJoinDate) / 60000 / 1.1 : (Date.now() - user.voice.lastJoinDate) / 60000;
+            const xp = user.id === '322945996931727361' ? ((Date.now() - user.voice.lastJoinDate) / 60000) * 0.8 : (Date.now() - user.voice.lastJoinDate) / 60000;
             await updateUser(newState.guild.id, newState.id, { voice: { time: xp, join: null, channel: null } });
         }
     },

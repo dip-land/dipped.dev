@@ -1,4 +1,4 @@
-import { Document, Filter, FindOneAndUpdateOptions, MongoClient, WithId } from 'mongodb';
+import { Collection, Document, Filter, FindOneAndUpdateOptions, MongoClient, WithId } from 'mongodb';
 import { Client } from '../classes/Client';
 import { Client as DjsClient, Snowflake } from 'discord.js';
 import { Guild, User, UserProjectionOptions, UserSortOptions } from '../types/database.type.js';
@@ -96,19 +96,19 @@ export async function getAllUsers(options?: { filter?: Filter<Document>; sort?: 
             documents.push(newUser);
         }
     }
-    return documents;
+    return documents as Array<WithId<User<false>>>;
 }
 
 export async function getAllGuildUsers(guild: Snowflake, options?: { filter?: Filter<Document>; sort?: UserSortOptions; project?: UserProjectionOptions; limit?: number }) {
     const collection = getCollection(guild);
     if (!collection) return false;
-    return await collection
+    return (await collection
         .find(options?.filter ? options.filter : { avatar: { $exists: true } }, {
             limit: options?.limit,
             projection: options?.project,
             sort: options?.sort ? options.sort : { id: 1 },
         })
-        .toArray();
+        .toArray()) as Array<WithId<User<false>>>;
 }
 
 export async function editUser(guild: Snowflake, user: User<false>['id'], data: User<true>, options?: FindOneAndUpdateOptions) {
@@ -147,14 +147,14 @@ async function editVoiceHistory(guild: Snowflake, user: User<false>['id'], time:
 export async function updateUser(
     guild: Snowflake,
     user: User<false>['id'],
-    data: { voice?: { time?: number; join?: number | null; channel?: string | null }; xp?: string; message?: number }
+    data: { voice?: { time?: number; join?: number | null; channel?: string | null }; total?: string; message?: number }
 ) {
     if (data.message) {
-        await incrementUser(guild, user, { 'message.count': data.message, xp: data.message });
+        await incrementUser(guild, user, { 'message.count': data.message, total: data.message });
         editMessageHistory(guild, user);
     }
     if (data.voice && data.voice.time) {
-        await incrementUser(guild, user, { 'voice.time': data.voice.time, xp: data.voice.time });
+        await incrementUser(guild, user, { 'voice.time': data.voice.time, total: data.voice.time });
         await editVoiceHistory(guild, user, data.voice.time);
     }
     if (data.voice && (data.voice.join || data.voice.join === null)) {
@@ -194,6 +194,7 @@ export async function messageCreate(client: Client | DjsClient, guild: Snowflake
     const guildUser = await client.users.fetch(user);
 
     if (!fetchedUser) {
+        const users = await (getCollection(guild) as Collection).estimatedDocumentCount();
         createUser(guild, {
             id: user,
             username: guildUser.username,
@@ -204,14 +205,28 @@ export async function messageCreate(client: Client | DjsClient, guild: Snowflake
                 lastJoinDate: null,
                 time: 0,
                 history: [],
+                modifier: 1,
             },
             message: {
                 count: 1,
                 history: [],
+                modifier: 1,
             },
-            xp: 1,
+            total: 1,
+            positions: {
+                total: users + 1,
+                message: users + 1,
+                voice: users + 1,
+            },
         });
     } else {
         await updateUser(guild, user, { message: 1 });
+        const total = await getAllGuildUsers(guild, { sort: { total: 'desc' } });
+        const message = await getAllGuildUsers(guild, { sort: { 'message.count': 'desc' } });
+        const voice = await getAllGuildUsers(guild, { sort: { 'voice.time': 'desc' } });
+        const overallRank = total ? total.findIndex((v) => v.id === user) + 1 : -1;
+        const messageRank = message ? message.findIndex((v) => v.id === user) + 1 : -1;
+        const voiceRank = voice ? voice.findIndex((v) => v.id === user) + 1 : -1;
+        await editUser(guild, user, { positions: { total: overallRank, message: messageRank, voice: voiceRank } });
     }
 }

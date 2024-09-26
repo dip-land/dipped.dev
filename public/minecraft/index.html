@@ -184,18 +184,14 @@
 </script>
 <script async src="/static/scripts/minecraft/home.js"></script>
 <div id="content" class="container">
-    <div class="statusPage" id="auth-container">
-        <h1 id="auth">Loading...</h1>
-        <a class="login hidden" target="popup" id="auth-login"> Login with Discord </a>
-    </div>
     <form action="/minecraft" id="filter">
         <select name="sort" id="sort">
-            <option value="asc" disabled selected>Select Sort</option>
+            <option value="na" disabled selected>Select Sort</option>
             <option value="asc">Name A-Z</option>
             <option value="desc">Name Z-A</option>
         </select>
         <select name="status" id="status">
-            <option value="all" disabled selected>Select Status</option>
+            <option value="na" disabled selected>Select Status</option>
             <option value="all">Any</option>
             <option value="current">Current</option>
             <option value="archived">Archived</option>

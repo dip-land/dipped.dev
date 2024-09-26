@@ -11,7 +11,7 @@ async function routes(fastify: FastifyInstance) {
             head: {
                 title: 'Role Eater Dashboard - dipped.dev',
                 description: 'Server Dashboard.',
-                image: '/static/icons/favicon.png',
+                image: '/static/images/favicon.png',
                 files: ['public/root/head.html', 'public/role-eater/head.html'],
             },
             body: { files: ['public/root/nav.html', 'public/role-eater/index.html'] },

@@ -9,7 +9,7 @@ export interface Role {
     color: string;
 }
 
-interface BaseGuild {
+export interface BaseGuild {
     icon: string | null;
     name: string;
     noStatsChannels: string[];
@@ -18,7 +18,7 @@ interface BaseGuild {
 
 export type Guild<Editable> = Editable extends false ? { id: Snowflake } & BaseGuild : Partial<BaseGuild>;
 
-interface BaseUser {
+export interface BaseUser {
     username: string;
     avatar: string | null;
     role:
@@ -34,22 +34,32 @@ interface BaseUser {
     message: {
         count: number;
         history: { date: string; count: number }[];
+        modifier: number;
     };
     'message.count'?: number;
     'message.history'?: { date: string; count: number };
     'message.history.date'?: string;
+    'message.modifier'?: number;
     voice: {
         channelID: string | null;
         lastJoinDate: number | null;
         time: number;
         history: { date: string; time: number }[];
+        modifier: number;
     };
     'voice.channelID'?: string | null;
     'voice.lastJoinDate'?: number | null;
     'voice.time'?: number;
     'voice.history'?: { date: string; tiem: number };
     'voice.history.date'?: string;
-    xp: number;
+    'voice.modifier'?: number;
+    total: number;
+    guild?: Snowflake;
+    positions: {
+        total: number;
+        message: number;
+        voice: number;
+    };
 }
 
 export type User<Editable> = Editable extends false ? { id: Snowflake } & BaseUser : Partial<BaseUser>;
@@ -65,10 +75,10 @@ export type UserSortOptions = {
     'voice.lastJoinDate'?: SortDirection;
     'voice.time'?: SortDirection;
     'message.count'?: SortDirection;
-    xp?: SortDirection;
+    total?: SortDirection;
 };
 
-type ProjectionOptions = boolean | 0 | 1;
+export type ProjectionOptions = boolean | 0 | 1;
 
 export interface UserProjectionOptions {
     id?: ProjectionOptions;
@@ -81,12 +91,12 @@ export interface UserProjectionOptions {
     'voice.lastJoinDate'?: ProjectionOptions;
     'voice.time'?: ProjectionOptions;
     'message.count'?: ProjectionOptions;
-    xp?: ProjectionOptions;
+    total?: ProjectionOptions;
 }
 
 export interface UserIncrementable {
     'voice.lastJoinDate'?: number;
     'voice.time'?: number;
     'message.count'?: number;
-    xp?: number;
+    total?: number;
 }

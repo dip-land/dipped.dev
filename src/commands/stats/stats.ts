@@ -1,15 +1,14 @@
 import { Command } from '../../classes/Command.js';
 import { ApplicationCommandOptionType, GuildMember } from 'discord.js';
 import { AttachmentBuilder } from 'discord.js';
-import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { launch } from 'puppeteer';
 import { getUser, updateUser } from '../../handlers/database.js';
 
 export default new Command({
     name: 'stats',
-    description: 'Shows a users level stats.',
+    description: 'Shows a users stats.',
     disabled: false,
-    category: 'levels',
+    category: 'stats',
     deferReply: false,
     dm_permission: false,
     hidden: false,
@@ -22,27 +21,20 @@ export default new Command({
         if (user && user.voice.channelID !== null)
             await updateUser(userOption.guild.id, userOption.user.id, {
                 voice: {
-                    time: user.id === '322945996931727361' ? (Date.now() - user.voice.lastJoinDate) / 60000 / 1.1 : (Date.now() - user.voice.lastJoinDate) / 60000,
+                    time: user.id === '322945996931727361' ? ((Date.now() - user.voice.lastJoinDate) / 60000) * 0.8 : (Date.now() - user.voice.lastJoinDate) / 60000,
                     join: Date.now(),
                 },
             });
-        const canvas = createCanvas(1280, 706);
-        const ctx = canvas.getContext('2d');
+
         const browser = await launch();
         const page = await browser.newPage();
         await page.setViewport({ width: 1280, height: 706 });
-        await page.goto(`http://localhost:8011/role-eater/dashboard/${interaction.guildId}/${userOption.user.id}.png`, {
+        await page.goto(`http://localhost:${process.env.WEB_PORT}/role-eater/dashboard/${interaction.guildId}/${userOption.user.id}.png`, {
             waitUntil: 'networkidle2',
         });
-        const ss = await page.screenshot();
-        const stats = await loadImage(ss);
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 1280, 706, 20);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(stats, 0, 0, 1280, 706);
+        const ss = await page.screenshot({ optimizeForSpeed: true, omitBackground: true });
 
-        const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: `${userOption.user.username}_stats.png` });
+        const attachment = new AttachmentBuilder(Buffer.from(ss.buffer), { name: `${userOption.user.username}_stats.png` });
         interaction.editReply({ content: '', files: [attachment] });
         await browser.close();
     },
@@ -54,27 +46,20 @@ export default new Command({
         if (user && user.voice.channelID !== null)
             await updateUser(userOption.guild.id, userOption.user.id, {
                 voice: {
-                    time: user.id === '322945996931727361' ? (Date.now() - user.voice.lastJoinDate) / 60000 / 1.1 : (Date.now() - user.voice.lastJoinDate) / 60000,
+                    time: user.id === '322945996931727361' ? ((Date.now() - user.voice.lastJoinDate) / 60000) * 0.8 : (Date.now() - user.voice.lastJoinDate) / 60000,
                     join: Date.now(),
                 },
             });
-        const canvas = createCanvas(1280, 706);
-        const ctx = canvas.getContext('2d');
+
         const browser = await launch();
         const page = await browser.newPage();
         await page.setViewport({ width: 1280, height: 706 });
-        await page.goto(`http://localhost:8011/role-eater/dashboard/${interaction.guildId}/${userOption.user.id}.png`, {
+        await page.goto(`http://localhost:${process.env.WEB_PORT}/role-eater/dashboard/${interaction.guildId}/${userOption.user.id}.png`, {
             waitUntil: 'networkidle2',
         });
-        const ss = await page.screenshot();
-        const stats = await loadImage(ss);
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 1280, 706, 20);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(stats, 0, 0, 1280, 706);
+        const ss = await page.screenshot({ optimizeForSpeed: true, omitBackground: true });
 
-        const attachment = new AttachmentBuilder(await canvas.encode('png'), { name: `${userOption.user.username}_stats.png` });
+        const attachment = new AttachmentBuilder(Buffer.from(ss.buffer), { name: `${userOption.user.username}_stats.png` });
         interaction.editReply({ content: '', files: [attachment] });
         await browser.close();
     },

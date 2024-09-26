@@ -6,6 +6,7 @@ const formatter = Intl.NumberFormat('en-US', {
 const dateFormatter = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric' });
 
 window.addEventListener('load', async () => {
+    console.log('e');
     const accessToken = window.localStorage.getItem('access_token');
     const container = document.getElementById('users');
     if (!accessToken) document.getElementById('me').remove();
@@ -78,12 +79,13 @@ window.addEventListener('load', async () => {
             ],
         },
         options: {
+            animation: false,
             scales: {
                 x: {
                     stacked: true,
                     ticks: {
                         font: {
-                            family: 'Inter, SF Pro Text, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+                            family: 'SF Pro Text, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                         },
                         color: '#8a91a5',
                     },
@@ -92,7 +94,7 @@ window.addEventListener('load', async () => {
                     stacked: true,
                     ticks: {
                         font: {
-                            family: 'Inter, SF Pro Text, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
+                            family: 'SF Pro Text, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"',
                         },
                         color: '#8a91a5',
                     },

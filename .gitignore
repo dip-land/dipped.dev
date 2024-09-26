@@ -3,7 +3,6 @@
 dist/
 node_modules/
 public/**/*.zip
-public/minecraft/servers
-public/static/styles/**/*.css
-public/static/styles/**/*.css.map
+public/styles/**/*.css
+public/styles/**/*.css.map
 package-lock.json

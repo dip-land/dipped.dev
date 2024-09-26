@@ -1,5 +1,5 @@
 function timeCode(data: { name: string; color: string }, type?: 'error') {
-    return `\x1b[${type === 'error' ? '31m' : '36m'}${new Date().toLocaleString()} ${data.color}[${data.name}]\x1b[0m`;
+    return `\x1b[${type === 'error' ? '31m' : '36m'}[${new Date().toLocaleString()}] ${data.color}[${data.name}]\x1b[0m`;
 }
 
 export default class Logger {

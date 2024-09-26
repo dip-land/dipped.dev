@@ -120,7 +120,7 @@ export async function constructPage(
 //         head: {
 //             title: options.title,
 //             description: `Error ${options.code}`,
-//             image: '/static/icons/favicon.png',
+//             image: '/static/images/favicon.png',
 //             files: ['public/html/head.html'],
 //             //scripts: [{ src: '', async: true }],
 //         },
