@@ -6,7 +6,7 @@ import Fastify from 'fastify';
 import Logger from './classes/logger.js';
 import schedule from 'node-schedule';
 
-export const version = '0.34.0';
+export const version = '0.34.1';
 
 //Bot
 export const client = new Client({
