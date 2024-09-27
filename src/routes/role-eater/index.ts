@@ -1,8 +1,5 @@
 import { FastifyInstance } from 'fastify';
 import { constructPage } from '../../constants.js';
-import { GlobalFonts } from '@napi-rs/canvas';
-
-GlobalFonts.loadFontsFromDir(process.env.FONTS);
 
 async function routes(fastify: FastifyInstance) {
     fastify.get('/', async (req, reply) => {
@@ -18,6 +15,8 @@ async function routes(fastify: FastifyInstance) {
         });
         return reply;
     });
+
+    fastify.register((await import('./dashboard.js')).default, { prefix: '/dashboard' });
 }
 
 export default routes;

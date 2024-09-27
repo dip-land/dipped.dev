@@ -3,14 +3,9 @@ import { constructPage } from '../constants.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import axios from 'axios';
-import { local, mcssApiServers, mcssHeaders } from './api.js';
+import { local, mcssApiServers, mcssHeaders } from './api/minecraft.js';
 
 async function routes(fastify: FastifyInstance) {
-    type test = {
-        name: string;
-        type: string;
-    };
-
     fastify.all('/', (req, reply) => {
         constructPage(reply, {
             language: 'en-US',
@@ -21,7 +16,6 @@ async function routes(fastify: FastifyInstance) {
     });
 
     fastify.all('/:name', async (req, reply) => {
-        const pack = (req.params as test).name;
         const serverData = (await axios(`${local}:${process.env.MCSS_PORT}/api/v2/servers`, { responseType: 'json', headers: mcssHeaders })).data as Array<mcssApiServers>;
         const server = serverData.filter((value) => value.folderName === (req.params as { name: string }).name)[0];
         try {

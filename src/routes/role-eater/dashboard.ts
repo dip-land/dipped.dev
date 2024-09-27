@@ -1,11 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { constructPage } from '../../constants.js';
-import { GlobalFonts } from '@napi-rs/canvas';
 import { JSDOM } from 'jsdom';
 import { readFileSync } from 'fs';
 import path from 'path';
-
-GlobalFonts.loadFontsFromDir(process.env.FONTS);
 
 async function routes(fastify: FastifyInstance) {
     fastify.get('/', async (req, reply) => {

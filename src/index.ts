@@ -3,14 +3,10 @@ import { Client } from './classes/Client.js';
 import 'dotenv/config';
 import { editUser, getAllUsers, getCollection, getGuildInfo, getUser, getUserCountAll, updateUser } from './handlers/database.js';
 import Fastify from 'fastify';
-import fastifyStatic from '@fastify/static';
-import fastifyFavicon from 'fastify-favicon';
-import { constructPage } from './constants.js';
-import path from 'node:path';
 import Logger from './classes/logger.js';
 import schedule from 'node-schedule';
 
-export const version = '0.33.0';
+export const version = '0.34.0';
 
 //Bot
 export const client = new Client({
@@ -74,35 +70,7 @@ client.login(process.env.TOKEN);
 const logger = new Logger('WebServer', '212;47;151');
 const fastify = Fastify({ logger: { level: 'error' }, ignoreTrailingSlash: true });
 
-fastify.register(fastifyStatic, { root: path.join(process.cwd(), 'public/'), prefix: '/static/' });
-fastify.register(fastifyFavicon, { path: path.join(process.cwd(), 'public/images/'), name: 'favicon.ico', maxAge: 3600 });
-fastify.setNotFoundHandler({ preValidation: (req, res, done) => done(), preHandler: (req, res, done) => done() }, async function (req, res) {
-    constructPage(res, {
-        language: 'en-US',
-        head: {
-            title: 'Page Not Found',
-            description: 'Error 404, Page Not Found.',
-            image: '/static/images/favicon.png',
-            files: ['public/root/head.html'],
-        },
-        body: { files: ['public/root/nav.html', 'public/root/404.html'] },
-    });
-    return res;
-});
-fastify.all('/', (req, reply) => {
-    constructPage(reply, {
-        language: 'en-US',
-        head: { title: 'Home', description: '', image: '/static/images/favicon.png', files: ['public/root/head.html'] },
-        body: { files: ['public/root/nav.html', 'public/root/index.html'] },
-    });
-    return reply;
-});
-
-fastify.register((await import('./routes/api.js')).default, { prefix: '/api' });
-fastify.register((await import('./routes/minecraft.js')).default, { prefix: '/minecraft' });
-fastify.register((await import('./routes/projects.js')).default, { prefix: '/projects' });
-fastify.register((await import('./routes/role-eater/index.js')).default, { prefix: '/role-eater' });
-fastify.register((await import('./routes/role-eater/dashboard.js')).default, { prefix: '/role-eater/dashboard' });
+fastify.register((await import('./routes/index.js')).default);
 
 try {
     await fastify.listen({ port: +process.env.WEB_PORT });
