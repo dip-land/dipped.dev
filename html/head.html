@@ -1,0 +1,11 @@
+<link rel="preconnect" href="https://discord.com" />
+<script defer src="/static/plugins/notification/index.js"></script>
+<script async src="/static/js/auth.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/index.css" />
+<script>
+    window.addEventListener('message', (event) => {
+        if (event.origin !== location.origin) return;
+        if (event.data === 'reload') location.reload();
+        if (event.data === 'reloadDash') location.replace(location.origin + '/role-eater/dashboard/');
+    });
+</script>

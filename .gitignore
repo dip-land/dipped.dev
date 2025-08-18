@@ -1,8 +1,2 @@
-.vscode/
-.env
-dist/
-node_modules/
-public/**/*.zip
-public/styles/**/*.css
-public/styles/**/*.css.map
-package-lock.json
+/target
+*.css

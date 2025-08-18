@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="/static/css/roleEater/user/imageChart.css" />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script id="mainScript" async src="/static/js/roleEater/userImageChart.js"></script>
+    </head>
+    <body>
+        <div id="main">
+            <div id="header">
+                <div id="user">
+                    <img id="userAvatar" />
+                    <div><span id="displayName">No Data</span><span id="userName"></span><span id="serverName">Activity</span></div>
+                </div>
+                <div class="date">
+                    <div>Created On</div>
+                    <div id="createdOn">January 1, 1970</div>
+                </div>
+                <div class="date">
+                    <div>Joined On</div>
+                    <div id="joinedOn">January 1, 1970</div>
+                </div>
+            </div>
+            <div id="legend">
+                <div>
+                    <span class="title">Messages </span>
+                    <div class="content">
+                        <span id="messageCount">0</span>
+                        <div style="background-color: #36d9ebd9"></div>
+                    </div>
+                </div>
+                <div>
+                    <span class="title">Voice Time</span>
+                    <div class="content">
+                        <span id="voiceTime">0</span><i id="voiceFormat">hrs</i>
+                        <div style="background-color: #ff636bd9"></div>
+                    </div>
+                </div>
+                <div>
+                    <span class="title">Game Time </span>
+                    <div class="content">
+                        <span id="gameTime">0</span><i id="gameFormat">hrs</i>
+                        <div style="background-color: #63ff7dd9"></div>
+                    </div>
+                </div>
+                <div>
+                    <span class="title">Music Time </span>
+                    <div class="content">
+                        <span id="musicTime">0</span><i id="musicFormat">hrs</i>
+                        <div style="background-color: #b94fffd9"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="chart">
+                <canvas width="1216" height="484" id="activityChart"></canvas>
+            </div>
+            <div id="footer">
+                <div id="footerText">Last <b>{d}</b> Days - <b>Timezone:</b> CDT/CST</div>
+                <div></div>
+            </div>
+        </div>
+    </body>
+</html>

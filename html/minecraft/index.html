@@ -1,0 +1,24 @@
+<script id="hide">
+    document.getElementById('center').children[2].classList.add('active');
+    document.getElementById('hide').remove();
+</script>
+<script async src="/static/js/minecraft/home.js"></script>
+<div id="content" class="container">
+    <form action="/minecraft" id="filter">
+        <select name="sort" id="sort">
+            <option value="na" disabled selected>Select Sort</option>
+            <option value="asc">Name A-Z</option>
+            <option value="desc">Name Z-A</option>
+        </select>
+        <select name="status" id="status">
+            <option value="na" disabled selected>Select Status</option>
+            <option value="all">Any</option>
+            <option value="current">Current</option>
+            <option value="archived">Archived</option>
+        </select>
+        <input type="submit" value="Filter" />
+        <input type="reset" value="Reset" id="reset" />
+    </form>
+    <div id="servers-count"></div>
+    <div id="servers"></div>
+</div>
