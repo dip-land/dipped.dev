@@ -13,16 +13,16 @@ mod minecraft;
 #[tokio::main]
 async fn main() {
      dotenv().ok();
-     
+
     let app = NormalizePathLayer::trim_trailing_slash().layer(
         Router::new()
-        .route("/", get(create_page(&["html/head.html"], &["html/nav.html", "html/index.html"]).await))
+        .route("/", get(create_page(&["html/head.html"], &["html/nav.html", "html/index.html"], None).await))
         .nest("/api", api::router().await)
         .nest("/minecraft", minecraft::router().await)
         .nest_service("/favicon.ico", ServeFile::new("assets/media/images/favicon.ico"))
         .nest_service("/static", ServeDir::new("assets"))
         .nest_service("/static/vault", ServeDir::new("private"))
-        .fallback(notfound_handler)
+        .fallback(status_404_handler)
     );
     
     let listener = tokio::net::TcpListener::bind("127.0.0.1:6570").await.unwrap();
@@ -30,8 +30,12 @@ async fn main() {
     axum::serve(listener, ServiceExt::<Request>::into_make_service(app)).await.unwrap();
 }
 
-async fn notfound_handler() -> impl IntoResponse {
-    (StatusCode::NOT_FOUND, create_page(&["html/head.html"], &["html/nav.html", "html/404.html"]).await)
+async fn status_403_handler() -> impl IntoResponse {
+    (StatusCode::FORBIDDEN, create_page(&["html/head.html"], &["html/nav.html", "html/403.html"], None).await)
+}
+
+async fn status_404_handler() -> impl IntoResponse {
+    (StatusCode::NOT_FOUND, create_page(&["html/head.html"], &["html/nav.html", "html/404.html"], None).await)
 }
 
 // Notes for me on Modules

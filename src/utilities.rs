@@ -2,9 +2,34 @@ use axum::response::Html;
 use std::path::Path;
 use tokio::{fs::File, io::{self, AsyncReadExt}};
 
-pub async fn create_page(head_files: &[&str], body_files: &[&str]) -> Html<String> {
-    let head_data = combine_files(head_files).await;
-    let body_data = combine_files(body_files).await;
+pub enum PageTemplatePosition {
+     HeadPrepend, HeadAppend, BodyPrepend, BodyAppend
+}
+
+pub struct PageTemplate {
+    pub pos: PageTemplatePosition,
+    pub template: String,
+}
+
+pub async fn create_page(head_files: &[&str], body_files: &[&str], templates: Option<&[&PageTemplate]>) -> Html<String> {
+    let mut head_data = combine_files(head_files).await;
+    let mut body_data = combine_files(body_files).await;
+    if let Some(_templates) = templates {
+        for template in _templates {
+            if let PageTemplatePosition::BodyAppend = template.pos {
+                body_data.push_str(template.template.as_str());
+            } else if let PageTemplatePosition::HeadAppend = template.pos {
+                head_data.push_str(template.template.as_str());
+            }
+        }
+        for template in _templates.iter().rev() {
+             if let PageTemplatePosition::BodyPrepend = template.pos {
+                body_data.insert_str(0, template.template.as_str());
+            } else if let PageTemplatePosition::HeadPrepend = template.pos {
+                head_data.insert_str(0, template.template.as_str());
+            } 
+        }
+    }
     Html(format!("<html>\n<head>\n{head_data}</head>\n<body>\n{body_data}</body>\n</html>"))
 }
 
