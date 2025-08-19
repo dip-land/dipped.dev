@@ -1,2 +1,5 @@
 /target
 *.css
+.vscode
+/private
+.env
