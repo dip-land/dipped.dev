@@ -11,7 +11,7 @@ pub struct PageTemplate {
     pub template: String,
 }
 
-pub async fn create_page(head_files: &[&str], body_files: &[&str], templates: Option<&[&PageTemplate]>) -> Html<String> {
+pub async fn create_page(head_files: &[&str], body_files: &[&str], templates: Option<&[PageTemplate]>) -> Html<String> {
     let mut head_data = combine_files(head_files).await;
     let mut body_data = combine_files(body_files).await;
     if let Some(_templates) = templates {

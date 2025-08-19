@@ -69,19 +69,19 @@ async fn server_page_handler(extract::Path(name): extract::Path<String>) -> impl
         &["html/head.html", "html/minecraft/head.html"], 
         &["html/nav.html"],
         Some(&[
-            &PageTemplate {
+            PageTemplate {
                 pos: PageTemplatePosition::BodyAppend,
                 template: template
             },
-            &PageTemplate {
+            PageTemplate {
                 pos: PageTemplatePosition::BodyAppend,
                 template: template2
             },
-            &PageTemplate {
+            PageTemplate {
                 pos: PageTemplatePosition::BodyPrepend,
                 template: template3
             },
-            &PageTemplate {
+            PageTemplate {
                 pos: PageTemplatePosition::BodyPrepend,
                 template: template4
             }
