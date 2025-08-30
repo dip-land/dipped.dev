@@ -16,11 +16,14 @@ window.addEventListener('load', async () => {
 
     document.getElementById('pack-icon').src = `/api/minecraft/icons/${server.id}`;
     document.getElementById('pack-name').innerHTML = server.name;
-    document.getElementById('map-frame').src = `/minecraft/maps/${server.identifier}/minecraft-overworld/index.html`;
 
-    document.getElementById('selected-dimension').addEventListener('change', (event) => {
-        document.getElementById('map-frame').src = `/minecraft/maps/${server.identifier}/${event.target.value}/index.html`;
-    });
+    if (document.getElementById('map-frame')) {
+        document.getElementById('map-frame').src = `/minecraft/maps/${server.identifier}/minecraft-overworld/index.html`;
+
+        document.getElementById('selected-dimension').addEventListener('change', (event) => {
+            document.getElementById('map-frame').src = `/minecraft/maps/${server.identifier}/${event.target.value}/index.html`;
+        });
+    }
 
     if (server.ip) {
         serverIP.innerHTML = server.ip + `<span class="tooltiptext">Click the IP to copy to clipboard.</span>`;
@@ -36,21 +39,14 @@ window.addEventListener('load', async () => {
     } else {
         document.getElementById('ip-container').remove();
     }
-    const status = document.getElementById('status');
-    if (server.status === 'current') {
-        if (server.online) status.classList.add('green'), (status.innerHTML = ' Online');
-        else status.classList.add('red'), (status.innerHTML = ' Offline');
-        document.getElementById('players').innerHTML = server.players;
-    } else {
-        status.innerHTML = server.status.toUpperCase();
-        status.classList.add('orange');
+
+    if (server.status !== 1) {
         document.getElementById('player-container').remove();
+        document.getElementById('ip-container').remove();
     }
 
     const downloadButton = document.getElementById('download');
-    if (server.download) {
-        downloadButton.href = `/api/minecraft/worlds/${server.id}`;
-    } else {
+    if (!server.world_download) {
         downloadButton.classList.add('disabled');
     }
 

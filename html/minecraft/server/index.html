@@ -1,0 +1,48 @@
+<script id="hide">
+    document.getElementById('center').children[2].classList.add('active');
+    document.getElementById('hide').remove();
+</script>
+<script async src="/static/js/minecraft/servers.js"></script>
+<div id="content" class="container">
+    <div id="pack-container">
+        <div id="pack">
+            <div id="pack-info">
+                <img id="pack-icon" src="{{ pack_icon }}" />
+                <h2 id="pack-name">{{ pack_name }}</h2>
+                <span id="pack-version">{{ pack_version }}</span>
+            </div>
+            <div id="server-info">
+                <h2>Server Info</h2>
+                <div id="status-container">
+                    <b>Status: </b>
+                    <span id="status" class="{{status_color}}">{{ server_status }}</span>
+                </div>
+                <div id="player-container">
+                    <b>Players: </b>
+                    <span id="players">{{ player_count }}</span>
+                </div>
+                <div id="ip-container">
+                    <b>IP: </b>
+                    <span id="server-ip" class="tooltip">{{ server_ip }}</span>
+                </div>
+                <div id="dates">
+                    <b>Start Date: </b>
+                    <span id="server-start">{{ server_start_date }}</span>
+                    <br />
+                    <b>End Date: </b>
+                    <span id="server-end">{{ server_end_date }}</span>
+                </div>
+            </div>
+
+            <div id="downloads">
+                <a id="pack-download" href="{{ pack_download_link }}" class="custom_button" style="margin-bottom: 16px">Download Modpack</a>
+                <a id="download" class="custom_button" href="{{ world_download_link }}">Download World File</a>
+            </div>
+        </div>
+
+        <div id="how-to" style="display: none">
+            <h2></h2>
+        </div>
+    </div>
+    {{additional_sections}}
+</div>

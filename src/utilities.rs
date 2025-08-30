@@ -1,7 +1,8 @@
 use axum::response::Html;
 use std::path::Path;
-use tokio::{fs::File, io::{self, AsyncReadExt}};
+use tokio::{fs::File, io::{self, AsyncReadExt}, join};
 
+#[allow(dead_code)]
 pub enum PageTemplatePosition {
      HeadPrepend, HeadAppend, BodyPrepend, BodyAppend
 }
@@ -12,8 +13,7 @@ pub struct PageTemplate {
 }
 
 pub async fn create_page(head_files: &[&str], body_files: &[&str], templates: Option<&[PageTemplate]>) -> Html<String> {
-    let mut head_data = combine_files(head_files).await;
-    let mut body_data = combine_files(body_files).await;
+    let (mut head_data, mut body_data) = join!(combine_files(head_files), combine_files(body_files));
     if let Some(_templates) = templates {
         for template in _templates {
             if let PageTemplatePosition::BodyAppend = template.pos {
@@ -38,7 +38,7 @@ pub async fn combine_files(paths: &[&str]) -> String {
     for path in paths {
         data.push(read_file(path).await.unwrap_or_else(|_| {"<h1>Error loading HTML file</h1>".to_string()}))
     }
-    data.join(" ")
+    data.join("\n")
 }
 
 pub async fn read_file<P: AsRef<Path>>(path: P) -> io::Result<String> {

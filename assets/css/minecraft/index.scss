@@ -1,4 +1,4 @@
-#filter {
+#sortingOptions {
     padding: 1rem 0;
     display: flex;
     gap: 1rem;
@@ -6,8 +6,8 @@
     flex-direction: row;
 }
 
-#filter input,
-#filter select {
+#sortingOptions input,
+#sortingOptions select {
     display: inline;
     background-color: rgb(33, 36, 45);
     color: white;
@@ -19,18 +19,18 @@
     height: 33px;
 }
 
-#filter input:hover,
-#filter select:hover {
+#sortingOptions input:hover,
+#sortingOptions select:hover {
     background-color: rgb(45, 49, 60);
 }
 
-#filter select {
+#sortingOptions select {
     padding: 8px 0px 8px 16px;
     border-right: 16px solid transparent;
 }
 
-#filter input[type='submit'],
-#filter #reset {
+#sortingOptions input[type='submit'],
+#sortingOptions #reset {
     align-self: flex-end;
 }
 

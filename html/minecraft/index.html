@@ -4,21 +4,22 @@
 </script>
 <script async src="/static/js/minecraft/home.js"></script>
 <div id="content" class="container">
-    <form action="/minecraft" id="filter">
+    <form action="/minecraft" id="sortingOptions">
         <select name="sort" id="sort">
-            <option value="na" disabled selected>Select Sort</option>
+            <option value="na" disabled selected>Sort</option>
+            <option value="default">Default</option>
             <option value="asc">Name A-Z</option>
             <option value="desc">Name Z-A</option>
         </select>
-        <select name="status" id="status">
-            <option value="na" disabled selected>Select Status</option>
-            <option value="all">Any</option>
+        <select name="filter" id="filter">
+            <option value="na" disabled selected>Status</option>
+            <option value="all">All</option>
             <option value="current">Current</option>
             <option value="archived">Archived</option>
+            <option value="deleted">Deleted</option>
         </select>
         <input type="submit" value="Filter" />
         <input type="reset" value="Reset" id="reset" />
     </form>
-    <div id="servers-count"></div>
-    <div id="servers"></div>
+    <div id="servers">{{server_templates}}</div>
 </div>

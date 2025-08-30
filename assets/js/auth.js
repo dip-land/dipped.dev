@@ -18,7 +18,7 @@ window.addEventListener('load', async () => {
         loginButtons = document.getElementsByClassName('login');
         const discordOAuth = 'https://discord.com/oauth2/authorize?client_id=1169815792142000228&response_type=token&redirect_uri=';
         const scopes = ['identify', 'guilds'];
-        for (const origin of ['http://localhost:8011', 'https://dipped.dev', 'http://localhost:8010', 'https://dev.dipped.dev']) {
+        for (const origin of ['http://localhost:8011', 'https://dipped.dev', 'http://localhost:8010', 'https://dev.dipped.dev', 'http://localhost:6570']) {
             if (origin !== window.location.origin) continue;
             for (const btn of loginButtons) {
                 btn.setAttribute('href', `${discordOAuth}${encodeURIComponent(origin)}&scope=${scopes.join('+')}`);
