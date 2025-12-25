@@ -6,57 +6,41 @@ const formatter = Intl.NumberFormat('en-US', {
 const dateFormatter = new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric', year: 'numeric' });
 
 window.addEventListener('load', async () => {
-    console.log('e');
     const accessToken = window.localStorage.getItem('access_token');
     const container = document.getElementById('users');
     if (!accessToken) document.getElementById('me').remove();
+
     const guildID = window.location.pathname.replace('/role-eater/dashboard/', '');
     const data = await (await fetch(`/api/role-eater/${guildID}`, { headers: { guilds: localStorage.getItem('guilds') } })).json();
-    console.log(data);
-    const usersWithRoles = data.users.map((user) => user.role?.id).filter((v) => v);
-    const totalMessages = data.users.map((user) => user.message.count).reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-    const totalVoiceTime = data.users.map((user) => user.voice.time).reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-    const guildIcon = Object.assign(document.createElement('img'), { id: 'guildIcon', src: `${data.guild.icon}` });
-    document.getElementById('guildName').innerText = data.guild.name;
+
+    const guildIcon = Object.assign(document.createElement('img'), { id: 'guildIcon', src: `${data.icon}` });
     guildIcon.addEventListener('error', (event) => {
         guildIcon.remove();
-        const text = data.guild.name.split(' ').map((v, i) => {
+        const text = data.name.split(' ').map((v, i) => {
             if (i < 3) return v.charAt(0);
         });
         document.getElementById('guildTop').prepend(Object.assign(document.createElement('span'), { id: 'guildIcon', innerText: `${text.join('')}` }));
     });
+
+    document.getElementById('guildName').innerText = data.name;
     document.getElementById('guildTop').prepend(guildIcon);
     document.getElementById('guildInfo').innerHTML = `<span>Users: ${Number(data.users.length).toLocaleString()}</span>
-    <span>Roles: ${Number(usersWithRoles.length).toLocaleString()}</span>
-    <span>Messages: ${Number(totalMessages).toLocaleString()}</span>
-    <span>Voice Minutes: ${Math.round(Number(totalVoiceTime)).toLocaleString()}</span>`;
+    <span>Roles: ${Number(data.role_count).toLocaleString()}</span>
+    <span>Messages: ${Number(data.message_count).toLocaleString()}</span>
+    <span>Voice Minutes: ${Math.round(Number(data.voice_time)).toLocaleString()}</span>`;
 
-    const today = new Date();
+    const chart_data = (await (await fetch(`/api/role-eater/${guildID}/activity`, { headers: { guilds: localStorage.getItem('guilds') } })).json()).data;
+
     let labels = [];
     const messageData = [];
     const voiceData = [];
 
-    const messageHistory = data.users.flatMap((user) => user.message.history);
-    const voiceHistory = data.users.flatMap((user) => user.voice.history);
     for (let index = 0; index < 46; index++) {
-        const day = new Date(new Date().setDate(today.getDate() - index));
+        const day = new Date(new Date().setDate(new Date().getDate() - index));
+        const data = chart_data.find((v) => v.date === day.toDateString());
         labels.push(new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric' }).format(day));
-        const messages = messageHistory.filter((v) => dateFormatter.format(new Date(v.date)) === dateFormatter.format(day));
-        messageData.push(
-            messages?.at(0)
-                ? messages.reduce((accumulator, object) => {
-                      return accumulator + object.count;
-                  }, 0)
-                : 0
-        );
-        const voice = voiceHistory.filter((v) => dateFormatter.format(new Date(v.date)) === dateFormatter.format(day));
-        voiceData.push(
-            voice?.at(0)
-                ? voice.reduce((accumulator, object) => {
-                      return accumulator + Math.round(object.time);
-                  }, 0)
-                : 0
-        );
+        messageData.push(data?.message_count ?? 0);
+        voiceData.push(data?.voice_time ?? 0);
     }
     labels = labels.reverse();
     new Chart(document.getElementById('serverActivityChartCanvas'), {
@@ -111,27 +95,35 @@ window.addEventListener('load', async () => {
     const me = JSON.parse(localStorage.getItem('me'));
     for (const index in data.users) {
         const user = data.users[index];
-        console.log(user);
-        const userDiv = Object.assign(document.createElement('a'), { id: `${user.id}`, classList: 'user' });
-        userDiv.href = location.href + `/${user.id}`;
+        const userDiv = Object.assign(document.createElement('a'), { id: `${user.user_id}`, classList: 'user' });
+        userDiv.href = location.href + `/${user.user_id}`;
+
         const position = Object.assign(document.createElement('span'), { classList: `position ${+index === 0 ? 'first' : +index === 1 ? 'second' : +index === 2 ? 'third' : ''}` });
         position.innerText = +index + 1;
+
         const userAvatar = Object.assign(document.createElement('img'), { src: `${user.avatar}?size=64`, classList: 'userAvatar' });
+
         const username = Object.assign(document.createElement('span'), { classList: 'username' });
-        username.innerHTML = `${user.nickname} <span>${user.username}</span>`;
+        username.innerHTML = `${user.display_name} <span>${user.username}</span>`;
+
         const messages = Object.assign(document.createElement('div'), { classList: 'xp' });
-        messages.innerText = formatter.format(+user.message.count);
+        messages.innerText = formatter.format(+user.message_count);
+
         const voiceTime = Object.assign(document.createElement('div'), { classList: 'xp' });
-        voiceTime.innerText = formatter.format(+user.voice.time);
+        voiceTime.innerText = formatter.format(+user.voice_time);
+
         const total = Object.assign(document.createElement('div'), { classList: 'xp' });
-        total.innerText = formatter.format(+user.message.count + +user.voice.time);
+        total.innerText = formatter.format(+user.total);
+
         userDiv.append(position, userAvatar, username, messages, voiceTime, total);
-        if (user.id === me?.id) {
+
+        if (user.user_id === me?.id) {
             const clone = userDiv.cloneNode(true);
             clone.classList.add('me');
-            clone.id = `me_${user.id}`;
+            clone.id = `me_${user.user_id}`;
             document.getElementById('me').append(clone);
         }
+
         container.append(userDiv);
     }
 });

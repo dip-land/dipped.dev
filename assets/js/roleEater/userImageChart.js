@@ -4,9 +4,17 @@ window.addEventListener('load', async () => {
     const guildID = script.getAttribute('data-guild');
     const userID = script.getAttribute('data-user');
     const data = await (await fetch(`/api/role-eater/${guildID}/${userID}`)).json();
+    const positions = await (await fetch(`/api/role-eater/${guildID}/positions`)).json();
+    const activityData = await (await fetch(`/api/role-eater/${guildID}/${userID}/activity`)).json();
+    const latestActivityData = await (await fetch(`/api/role-eater/${guildID}/${userID}/activity/latest`)).json();
+    const gameData = await (await fetch(`/api/role-eater/${guildID}/${userID}/activity/game`)).json();
+    const musicData = await (await fetch(`/api/role-eater/${guildID}/${userID}/activity/music`)).json();
 
-    if (data.user.statImage) {
+    if (false) {
         document.getElementById('main').style.backgroundImage = `url('${data.user.statImage.replace(/(\r\n|\n|\r)/gm, '')}')`;
+        document.getElementById('main').classList.add('customImage');
+    } else if (data.banner && false) {
+        document.getElementById('main').style.backgroundImage = `url('${data.banner}')`;
         document.getElementById('main').classList.add('customImage');
     }
 
@@ -16,14 +24,14 @@ window.addEventListener('load', async () => {
         return value <= min ? min : value >= max ? max : value;
     }
 
-    document.getElementById('userAvatar').src = data.user.avatar;
-    document.getElementById('displayName').innerHTML = data.apiMember.nickname ?? data.apiMember.displayName ?? data.apiUser.globalName;
-    document.getElementById('userName').innerHTML = data.user.username;
-    document.getElementById('serverName').innerHTML = data.guild.name;
+    document.getElementById('userAvatar').src = data.avatar;
+    document.getElementById('displayName').innerHTML = data.nickname ?? data.display_name ?? data.apiUser.global_name;
+    document.getElementById('userName').innerHTML = data.username;
+    document.getElementById('serverName').innerHTML = data.guild_name;
 
     const formatter = new Intl.DateTimeFormat('en-us', { month: 'short', day: 'numeric', year: 'numeric' });
-    document.getElementById('createdOn').innerHTML = formatter.format(data.apiUser.createdTimestamp);
-    document.getElementById('joinedOn').innerHTML = formatter.format(data.apiMember.joinedTimestamp);
+    document.getElementById('createdOn').innerHTML = formatter.format(new Date(data.created_date));
+    document.getElementById('joinedOn').innerHTML = formatter.format(new Date(data.join_date));
 
     document.getElementById('footerText').innerHTML = document.getElementById('footerText').innerHTML.replace('{d}', days - 1);
 
@@ -32,46 +40,26 @@ window.addEventListener('load', async () => {
         maximumFractionDigits: 2,
     });
 
-    const today = new Date();
-    const labels = [];
-    const messageData = [];
-    const voiceData = [];
-    const gameDataHours = [];
-    const musicDataHours = [];
-    const voiceDataMins = [];
-    const gameDataMins = [];
-    const musicDataMins = [];
+    const labels = [],
+        messageData = [],
+        voiceData = [],
+        gameDataHours = [],
+        musicDataHours = [],
+        voiceDataMins = [],
+        gameDataMins = [],
+        musicDataMins = [];
 
-    const messageHistory = data.user.message.history;
-    for (let index = 0; index < days; index++) {
-        const day = new Date(new Date().setDate(today.getDate() - index));
+    for (let index = 0; index < 46; index++) {
+        const day = new Date(new Date().setDate(new Date().getDate() - index));
+        const data = activityData.data.find((v) => v.date === day.toDateString());
         labels.push(new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric' }).format(day));
-        const value = messageHistory.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
-        messageData.push(value?.count ?? 0);
-    }
-
-    const voiceHistory = data.user.voice.history;
-    for (let index = 0; index < days; index++) {
-        const day = new Date(new Date().setDate(today.getDate() - index));
-        const value = voiceHistory.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
-        voiceData.push(value?.time / 60 || 0);
-        voiceDataMins.push(value?.time || 0);
-    }
-
-    const gameTimeHistory = data.user.activities?.game?.timeHistory;
-    for (let index = 0; index < days; index++) {
-        const day = new Date(new Date().setDate(today.getDate() - index));
-        const value = gameTimeHistory?.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
-        gameDataHours.push(value?.time / 60 / 60 || 0);
-        gameDataMins.push(value?.time / 60 || 0);
-    }
-
-    const musicTimeHistory = data.user.activities?.music?.timeHistory;
-    for (let index = 0; index < days; index++) {
-        const day = new Date(new Date().setDate(today.getDate() - index));
-        const value = musicTimeHistory?.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
-        musicDataHours.push(value?.time / 60 / 60 || 0);
-        musicDataMins.push(value?.time / 60 || 0);
+        messageData.push(data?.message_count ?? 0);
+        voiceData.push(data?.voice_time / 60 ?? 0);
+        voiceDataMins.push(data?.voice_time ?? 0);
+        gameDataHours.push(data?.game_time / 60 / 60 || 0);
+        gameDataMins.push(data?.game_time / 60 || 0);
+        musicDataHours.push(data?.music_time / 60 / 60 || 0);
+        musicDataMins.push(data?.music_time / 60 || 0);
     }
 
     const messages = messageData.reduce((a, b) => {

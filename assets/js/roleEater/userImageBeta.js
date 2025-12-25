@@ -1,98 +1,86 @@
 window.addEventListener('load', async () => {
-    const script = document.getElementById('mainScript');
-    const guildID = script.getAttribute('data-guild');
-    const userID = script.getAttribute('data-user');
+    const paths = location.pathname.split("/").filter(v => v);
+    const guildID = paths[2];
+    const userID = paths[3];
     const data = await (await fetch(`/api/role-eater/${guildID}/${userID}`)).json();
+    const activityData = await (await fetch(`/api/role-eater/${guildID}/${userID}/activity`)).json();
+    const latestActivityData = await (await fetch(`/api/role-eater/${guildID}/${userID}/activity/latest`)).json();
+    const gameData = await (await fetch(`/api/role-eater/${guildID}/${userID}/activity/game?limit=5`)).json();
+    const musicData = await (await fetch(`/api/role-eater/${guildID}/${userID}/activity/music?limit=5`)).json();
 
-    if (data.user.statImage) {
+    if (false) {
         document.getElementById('main').style.backgroundImage = `url('${data.user.statImage.replace(/(\r\n|\n|\r)/gm, '')}')`;
+        document.getElementById('main').classList.add('customImage');
+    } else if (data.banner && false) {
+        document.getElementById('main').style.backgroundImage = `url('${data.banner}')`;
         document.getElementById('main').classList.add('customImage');
     }
 
-    document.getElementById('userAvatar').src = data.user.avatar;
-    document.getElementById('displayName').innerHTML = data.apiMember.nickname ?? data.apiMember.displayName ?? data.apiUser.globalName;
-    document.getElementById('userName').innerHTML = data.user.username;
-    document.getElementById('serverName').innerHTML = data.guild.name;
+    document.getElementById('userAvatar').src = data.avatar;
+    document.getElementById('displayName').innerHTML = data.nickname ?? data.display_name ?? data.apiUser.global_name;
+    document.getElementById('userName').innerHTML = data.username;
+    document.getElementById('serverName').innerHTML = data.guild_name;
 
     const formatter = new Intl.DateTimeFormat('en-us', { month: 'short', day: 'numeric', year: 'numeric' });
-    document.getElementById('createdOn').innerHTML = formatter.format(data.apiUser.createdTimestamp);
-    document.getElementById('joinedOn').innerHTML = formatter.format(data.apiMember.joinedTimestamp);
+    document.getElementById('createdOn').innerHTML = formatter.format(new Date(data.creation_date));
+    document.getElementById('joinedOn').innerHTML = formatter.format(new Date(data.join_date));
 
-    document.getElementById('overallRank').innerHTML = `#${data.user.positions.total}`;
-    document.getElementById('messageRank').innerHTML = `#${data.user.positions.message}`;
-    document.getElementById('voiceRank').innerHTML = `#${data.user.positions.voice}`;
+    document.getElementById('overallRank').innerHTML = `#${data.total_position}`;
+    document.getElementById('messageRank').innerHTML = `#${data.message_position}`;
+    document.getElementById('voiceRank').innerHTML = `#${data.voice_position}`;
 
     const numberFormatter = Intl.NumberFormat('en-US', {
         notation: 'compact',
         maximumFractionDigits: 2,
     });
 
-    document.getElementById('messageActivityall').innerHTML = numberFormatter.format(data.user.message.count).toLowerCase();
-    document.getElementById('voiceActivityall').innerHTML = numberFormatter.format(data.user.voice.time).toLowerCase();
+    document.getElementById('messageActivityall').innerHTML = numberFormatter.format(data.message_count).toLowerCase();
+    document.getElementById('voiceActivityall').innerHTML = numberFormatter.format(data.voice_time).toLowerCase();
 
-    const gameHistory = data.user.activities?.game?.history.sort((a, b) => b.time - a.time);
-    document.getElementById('lastGame').innerHTML = `${data.user.activities?.game?.title ?? data.user.activities?.game?.lastPlayed ?? 'No Data'}`;
-    const lgt = (Date.now() - (data.user.activities?.game?.startDate ?? Date.now())) / 1000 / 60;
-    const gameMinutes = lgt || (data.user.activities?.game?.lastPlayedTime ?? 0) / 60;
-    const gameTotalMins = (gameHistory?.at(0)?.time ?? 0) / 60;
+    const gameHistory = gameData.data;
+    document.getElementById('lastGame').innerHTML = `${latestActivityData.current_game_title ?? latestActivityData.last_played_game_title ?? 'No Data'}`;
+    const currentGameTime = (Date.now() - (latestActivityData.current_game_start_time ?? Date.now())) / 1000 / 60;
+    const gameMinutes = currentGameTime || (latestActivityData.last_played_game_time ?? 0) / 60;
+    const gameTotalMins = (gameHistory[0]?.time_played ?? 0) / 60;
 
     document.getElementById('lastGameTime').innerHTML = `${numberFormatter.format(gameMinutes > 60 ? gameMinutes / 60 : gameMinutes)} ${gameMinutes > 60 ? 'hrs' : 'mins'}`;
-    document.getElementById('mostGame').innerHTML = `${gameHistory?.at(0)?.title ?? 'No Data'}`;
+    document.getElementById('mostGame').innerHTML = `${gameHistory[0]?.game_title ?? 'No Data'}`;
     document.getElementById('mostGameTime').innerHTML = `${numberFormatter.format(gameTotalMins > 60 ? gameTotalMins / 60 : gameTotalMins)} ${gameTotalMins > 60 ? 'hrs' : 'mins'}`;
 
-    const musicHistory = data.user.activities?.music?.history.sort((a, b) => b.time - a.time);
-    document.getElementById('lastSong').innerHTML = `${data.user.activities?.music?.song ?? data.user.activities?.music?.lastPlayed ?? 'No Data'}`;
-    document.getElementById('lastSongArtist').innerHTML = `${data.user.activities?.music?.artist ?? data.user.activities?.music?.lastPlayedArtist ?? 'No Data'}`;
-    document.getElementById('mostSong').innerHTML = `${musicHistory?.at(0)?.name ?? 'No Data'}`;
-    document.getElementById('mostSongArtist').innerHTML = `${musicHistory?.at(0)?.artist ?? 'No Data'}`;
+    const musicHistory = musicData.data;
+    document.getElementById('lastSong').innerHTML = `${latestActivityData.current_song_title ?? latestActivityData.last_played_song_title ?? 'No Data'}`;
+    document.getElementById('lastSongArtist').innerHTML = `${latestActivityData.current_song_artist ?? latestActivityData.last_played_song_artist ?? 'No Data'}`;
+    document.getElementById('mostSong').innerHTML = `${musicHistory[0]?.song_title ?? 'No Data'}`;
+    document.getElementById('mostSongArtist').innerHTML = `${musicHistory[0]?.song_artist ?? 'No Data'}`;
 
-    const today = new Date();
     const labels = [];
     const messageData = [];
     const voiceData = [];
     const gameTime = [];
     const musicTime = [];
 
-    const messageHistory = data.user.message.history;
     let messageWeekCount = 0;
-    for (let index = 0; index < 46; index++) {
-        const day = new Date(new Date().setDate(today.getDate() - index));
-        labels.push(new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric' }).format(day));
-        const value = messageHistory.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
-        if (index === 0) {
-            document.getElementById('messageActivity1d').innerHTML = numberFormatter.format(value?.count ?? 0).toLowerCase();
-        }
-        if (index < 8) messageWeekCount = messageWeekCount + (value?.count ?? 0);
-        messageData.push(value?.count ?? 0);
-    }
-    document.getElementById('messageActivity7d').innerHTML = numberFormatter.format(messageWeekCount).toLowerCase();
-
-    const voiceHistory = data.user.voice.history;
     let voiceWeekCount = 0;
     for (let index = 0; index < 46; index++) {
-        const day = new Date(new Date().setDate(today.getDate() - index));
-        const value = voiceHistory.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
+        const day = new Date(new Date().setDate(new Date().getDate() - index));
+        const data = activityData.data.find((v) => v.date === day.toDateString());
+        labels.push(new Intl.DateTimeFormat('en-us', { month: 'long', day: 'numeric' }).format(day));
         if (index === 0) {
-            document.getElementById('voiceActivity1d').innerHTML = numberFormatter.format(Math.round(value?.time || 0)).toLowerCase();
+            document.getElementById('messageActivity1d').innerHTML = numberFormatter.format(data?.message_count ?? 0).toLowerCase();
+            document.getElementById('voiceActivity1d').innerHTML = numberFormatter.format(Math.round(data?.voice_time ?? 0)).toLowerCase();
         }
-        if (index < 8) voiceWeekCount = voiceWeekCount + Math.round(value?.time || 0);
-        voiceData.push(value?.time / 60 || 0);
+        if (index < 8) {
+            messageWeekCount = messageWeekCount + (data?.message_count ?? 0);
+            voiceWeekCount = voiceWeekCount + Math.round(data?.voice_time ?? 0);
+        }
+        messageData.push(data?.message_count ?? 0);
+        voiceData.push(data?.voice_time / 60 ?? 0);
+        gameTime.push(data?.game_time / 60 / 60 || 0);
+        musicTime.push(data?.music_time / 60 / 60 || 0);
     }
+
+    document.getElementById('messageActivity7d').innerHTML = numberFormatter.format(messageWeekCount).toLowerCase();
     document.getElementById('voiceActivity7d').innerHTML = numberFormatter.format(voiceWeekCount).toLowerCase();
-
-    const gameTimeHistory = data.user.activities?.game?.timeHistory;
-    for (let index = 0; index < 46; index++) {
-        const day = new Date(new Date().setDate(today.getDate() - index));
-        const value = gameTimeHistory?.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
-        gameTime.push(value?.time / 60 / 60 || 0);
-    }
-
-    const musicTimeHistory = data.user.activities?.music?.timeHistory;
-    for (let index = 0; index < 46; index++) {
-        const day = new Date(new Date().setDate(today.getDate() - index));
-        const value = musicTimeHistory?.find((v) => formatter.format(new Date(v.date)) === formatter.format(day));
-        musicTime.push(value?.time / 60 / 60 || 0);
-    }
 
     const ctx = document.getElementById('activityChart');
 

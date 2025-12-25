@@ -7,9 +7,9 @@ window.addEventListener('load', async () => {
     const data = await (await fetch(`/api${location.pathname.replace('dashboard/', '').replace('.png', '')}?limit=6&sort=${type}`)).json();
     console.log(data);
     console.log(data);
-    document.getElementById('serverIcon').src = data.apiGuild.iconURL;
-    document.getElementById('serverName').innerHTML = data.apiGuild.name;
-    document.getElementById('memberCount').innerHTML = `${data.apiGuild.members.length} Members`;
+    document.getElementById('serverIcon').src = data.icon;
+    document.getElementById('serverName').innerHTML = data.name;
+    document.getElementById('memberCount').innerHTML = `${data.user_count} Members`;
 
     for (const index in data.users) {
         const user = data.users[index];
