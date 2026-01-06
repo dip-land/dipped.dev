@@ -1,186 +1,185 @@
 use crate::{
-    minecraft::api::{SortingOptions, get_minecraft_server, get_minecraft_servers},
-    status_404_handler,
-    utilities::{PageTemplate, PageTemplatePosition, create_page},
+    AppState,
+    minecraft::api::{Server, ServerOnlineStatus, ServerStatus, SortingOptions},
+    templates::{
+        head,
+        minecraft::server_card,
+        nav, root,
+        status::status_404_handler,
+        terminal::{self, ButtonOptions},
+        terminal_line,
+    },
 };
-use askama::Template;
 use axum::{
     Router,
-    extract::{Path, Query},
-    http::HeaderMap,
+    extract::{Path, Query, State},
     response::IntoResponse,
     routing::get,
 };
-use std::{fs::read_dir, path};
+use maud::{Markup, html};
+use std::path;
 use tower_http::services::ServeDir;
 
 pub mod api;
 
-pub fn router() -> Router {
-    let servers_path = dotenv!("SERVERS_PATH");
-
+pub fn router(servers: Vec<Server>) -> Router<AppState> {
     let mut router = Router::new()
         .route("/", get(servers_page_handler))
         .route("/{name}", get(server_page_handler));
 
-    let paths = read_dir(format!("{}", servers_path))
-        .unwrap()
-        .map(|dir| dir.unwrap().path())
-        .collect::<Vec<_>>();
-
-    for dir_path in paths {
-        let path_string = dir_path.to_str().unwrap();
-        if path::Path::new(path_string).exists() {
-            let identifier = dir_path.file_stem().unwrap().to_str().unwrap();
-            router = router
-                .nest_service(
-                    format!("/maps/{identifier}").as_str(),
-                    ServeDir::new(format!("{path_string}/map")),
-                )
-                .fallback(status_404_handler);
-        }
+    for server in servers {
+        let path = path::Path::new(&server.path);
+        router = router
+            .nest_service(
+                format!("/maps/{}", server.identifier).as_str(),
+                ServeDir::new(path.join("./map")),
+            )
+            .fallback(status_404_handler());
     }
 
-    router.fallback(status_404_handler)
+    router.fallback(status_404_handler())
 }
 
-async fn servers_page_handler(sorting_options: Query<SortingOptions>) -> impl IntoResponse {
-    let servers = get_minecraft_servers(sorting_options).await;
+async fn servers_page_handler(
+    State(state): State<AppState>,
+    _sorting_options: Query<SortingOptions>,
+) -> Markup {
+    let servers = state.minecraft_servers.lock().await;
+    let servers = servers.clone();
     let server_templates = servers
         .iter()
-        .map(|server| {
-            let server = server.clone();
-            let mut status = "current";
-            if server.status == 0 {
-                status = "deleted"
-            }
-            if server.status == 2 {
-                status = "archived"
-            }
-            HomeServerHtmlTemplate {
-                identifier: server.identifier,
-                server_name: server.name,
-                server_id: server.id,
-                server_status: status.to_string(),
-            }
-            .to_string()
-        })
+        .map(|server| server_card(server.to_owned()))
         .collect::<Vec<_>>();
-    let main_template = ServersTemplate {
-        server_templates: server_templates.join(""),
-    }
-    .to_string();
 
-    create_page(
-        &["html/head.html", "html/minecraft/head.html"],
-        &["html/nav.html"],
-        Some(&[PageTemplate {
-            pos: PageTemplatePosition::BodyAppend,
-            template: main_template,
-        }]),
+    root::main(
+        vec![head::main(), head::minecraft_home()],
+        vec![
+            nav::main(),
+            root::main_section(vec![terminal::main(
+                vec![
+                    terminal_line::command("bash ~/minecraft"),
+                    terminal_line::blank(),
+                    terminal::grid(server_templates),
+                    terminal_line::blank(),
+                    terminal_line::command_cursor(),
+                ],
+                terminal::TerminalType::Normal,
+            )]),
+        ],
     )
 }
 
-async fn server_page_handler(Path(server): Path<String>, headers: HeaderMap) -> impl IntoResponse {
-    let mut ip: String = "localhost".to_string();
-    if headers
-        .get("cf-connecting-ip")
-        .is_some_and(|value| value != "null")
-    {
-        ip = headers
-            .get("cf-connecting-ip")
-            .unwrap()
-            .to_str()
-            .unwrap()
-            .to_string()
+async fn server_page_handler(
+    State(state): State<AppState>,
+    Path(identifier): Path<String>,
+) -> impl IntoResponse {
+    let servers = state.minecraft_servers.lock().await;
+    let servers = servers.clone();
+    let server = servers
+        .iter()
+        .find(|server| server.identifier == identifier);
+    if server.is_none() {
+        return status_404_handler().into_response();
     }
-
-    let server_data = get_minecraft_server(server, Vec::new(), ip).await;
-
-    if server_data.id == "" {
-        return status_404_handler().await.into_response();
-    }
-
-    let mut players = "0".to_string();
-    if server_data.players.is_some() {
-        players = server_data.players.unwrap().to_string();
-    }
+    let server = server.unwrap();
 
     let mut status = "Deleted";
-    let mut status_color = "red";
-    if server_data.status == 1 {
-        if server_data.online {
+    if ServerStatus::Current == server.status {
+        if ServerOnlineStatus::Online == server.online {
             status = "Online";
-            status_color = "green";
         } else {
             status = "Offline";
         }
     }
-    if server_data.status == 2 {
+    if ServerStatus::Archived == server.status {
         status = "Archived";
-        status_color = "orange";
-        players = "0".to_string()
     }
 
-    let template = ServerTemplate {
-        pack_icon: format!("/api/minecraft/icons/{}", server_data.id),
-        pack_name: server_data.name,
-        pack_version: server_data.version,
-        server_status: status.to_string(),
-        status_color: status_color.to_string(),
-        player_count: players,
-        server_ip: "".to_string(),
-        server_start_date: server_data.server_dates.start,
-        server_end_date: server_data.server_dates.end,
-        pack_download_link: server_data.link.url,
-        world_download_link: format!("/api/minecraft/worlds/{}", server_data.id).to_string(),
-        additional_sections: MapTemplate {}.to_string(),
-    }
-    .to_string();
+    let mut main_group = vec![
+        terminal_line::header(server.name.as_str()),
+        terminal_line::output(format!("Version: {}", server.version).as_str()),
+        terminal_line::output(format!("Status: {}", status).as_str()),
+    ];
 
-    create_page(
-        &["html/head.html", "html/minecraft/server/head.html"],
-        &["html/nav.html"],
-        Some(&[PageTemplate {
-            pos: PageTemplatePosition::BodyAppend,
-            template: template,
-        }]),
+    if server.status == ServerStatus::Current {
+        main_group.push(terminal_line::output(
+            format!("Players: {:?}", server.players.unwrap()).as_str(),
+        ));
+    }
+
+    main_group.push(terminal_line::output(
+        format!("Start Date: {}", server.start_date).as_str(),
+    ));
+    main_group.push(terminal_line::output(
+        format!("End Date: {}", server.end_date).as_str(),
+    ));
+
+    root::main(
+        vec![head::main(), head::minecraft_server()],
+        vec![
+            nav::main(),
+            root::main_section(vec![terminal::main(
+                vec![
+                    terminal::inline_group(vec![
+                        terminal::image(
+                            format!("/api/minecraft/icons/{}", server.id).as_str(),
+                            server.name.as_str(),
+                            true,
+                            "width: 200px;",
+                        ),
+                        terminal::group(main_group, false, "flex-direction: column; gap: 0.25rem;"),
+                        terminal::group(
+                            vec![
+                                terminal::button(ButtonOptions {
+                                    href: server.install_link.as_str(),
+                                    external: true,
+                                    content: "Install Mod Pack",
+                                    button_number: None,
+                                    disabled: false,
+                                    inline: false,
+                                    style: terminal::ButtonStyle::Default,
+                                }),
+                                terminal::button(ButtonOptions {
+                                    href: server.view_pack_link.as_str(),
+                                    external: true,
+                                    content: "View Mod Pack",
+                                    button_number: None,
+                                    disabled: false,
+                                    inline: false,
+                                    style: terminal::ButtonStyle::Default,
+                                }),
+                                terminal::button(ButtonOptions {
+                                    href: format!("/api/minecraft/worlds/{}", server.id).as_str(),
+                                    external: true,
+                                    content: "Download World File",
+                                    button_number: None,
+                                    disabled: server.world_download == false,
+                                    inline: false,
+                                    style: terminal::ButtonStyle::Default,
+                                }),
+                            ],
+                            false,
+                            "flex-direction: column; gap: 0rem;",
+                        ),
+                    ]),
+                    terminal_line::blank(),
+                    html! {
+                        div id="map-container" {
+                            iframe id="map-frame" {}
+                            div id="map-options" {
+                                select id="selected-dimension" {
+                                    option value="minecraft-overworld" selected { "Overworld" }
+                                    option value="minecraft-the_nether" { "The Nether" }
+                                    option value="minecraft-the_end" { "The End" }
+                                }
+                            }
+                        }
+                    },
+                    terminal_line::command_cursor(),
+                ],
+                terminal::TerminalType::Normal,
+            )]),
+        ],
     )
     .into_response()
 }
-
-#[derive(Template)]
-#[template(path = "../html/minecraft/index.html", escape = "none")]
-struct ServersTemplate {
-    server_templates: String,
-}
-
-#[derive(Template)]
-#[template(path = "../html/minecraft/serverCardTemplate.html")]
-struct HomeServerHtmlTemplate {
-    identifier: String,
-    server_id: String,
-    server_name: String,
-    server_status: String,
-}
-
-#[derive(Template)]
-#[template(path = "../html/minecraft/server/index.html", escape = "none")]
-struct ServerTemplate {
-    pack_icon: String,
-    pack_name: String,
-    pack_version: String,
-    server_status: String,
-    status_color: String,
-    player_count: String,
-    server_ip: String,
-    server_start_date: String,
-    server_end_date: String,
-    pack_download_link: String,
-    world_download_link: String,
-    additional_sections: String,
-}
-
-#[derive(Template)]
-#[template(path = "../html/minecraft/server/map.html")]
-struct MapTemplate {}

@@ -1,3 +1,35 @@
+$background-1: hsl(244, 25%, 4%);
+$background-2: hsl(244, 24%, 6%);
+$background-3: hsl(244, 23%, 8%);
+$background-4: hsl(244, 22%, 10%);
+$background-5: hsl(244, 20%, 12%);
+$background-6: hsl(244, 19%, 14%);
+$accent: #106DFF;
+$accent-transparent-75: hsla(217, 100%, 53%, 0.75);
+$accent-transparent-50: hsla(217, 100%, 53%, 0.5);
+$accent-transparent-25: hsla(217, 100%, 53%, 0.25);
+$red: hsl(10, 100%, 53%);
+$red-transparent-75: hsla(10, 100%, 53%, 0.75);
+$red-transparent-50: hsla(10, 100%, 53%, 0.5);
+$red-transparent-25: hsla(10, 100%, 53%, 0.25);
+
+$nav-background-color: hsl(244, 25%, 4%);
+$nav-border-color: hsl(244, 12%, 28%);
+$nav-height: 60px;
+
+$font-color: white;
+$font-color-muted: rgb(200, 200, 200);
+
+$terminal-background-color: hsl(244, 27%, 4%);
+$terminal-border-color: hsl(244, 12%, 28%);
+$terminal-muted: rgb(155, 155, 155);
+$terminal-prompt: #106DFF;
+$terminal-user: #106DFF;
+$terminal-path: #106DFF;
+$terminal-primary: #106DFF;
+$terminal-accent: #106DFF;
+$terminal-bg-light: hsl(244, 20%, 12%);
+
 #sortingOptions {
     padding: 1rem 0;
     display: flex;
@@ -46,85 +78,59 @@ h3 {
     font-size: 1rem;
 }
 
-#servers {
-    margin: 0 auto 1rem;
-    width: min(100%, 1340px);
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 1rem;
-    box-sizing: border-box;
-
-    .server {
-        position: relative;
-        background-color: rgb(8, 8, 9);
+.server {
+    position: relative;
+        background-color: $background-6;
         border-radius: 6px;
         cursor: pointer;
         overflow: hidden;
         color: aliceblue;
         transition: all ease 200ms;
         min-height: 174px;
+        border: 1px solid transparent;
 
-        &:hover {
-            color: white;
-            box-shadow: 0px 4px 15px 0px #cc335e;
+    &:hover {
+        color: white;
+            border: 1px solid $accent;
             transform: translateY(-1px);
-        }
+    }
 
-        .serverBackground {
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center;
-            filter: blur(10px);
-            position: absolute;
-            inset: -12px;
-        }
+    .server_background {
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        filter: blur(10px);
+        position: absolute;
+        inset: -12px;
+    }
 
-        .serverContent {
+    .server_content {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        background-color: rgba(8, 8, 9, 0.4);
+        padding: 1rem;
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+        inset: 0;
+
+        .server_icon {
             display: flex;
-            flex-direction: column;
-            position: absolute;
-            background-color: rgba(8, 8, 9, 0.4);
-            padding: 1rem;
-            text-align: center;
+            border-radius: 50%;
+            width: 80px !important;
+            height: 80px !important;
+            margin-bottom: 1rem;
+            border: 2px solid rgb(255, 255, 255);
+            font-size: 24px;
+            justify-content: center;
             align-items: center;
-            vertical-align: middle;
-            inset: 0;
-
-            .serverIcon {
-                display: flex;
-                border-radius: 50%;
-                width: 80px !important;
-                height: 80px !important;
-                margin-bottom: 1rem;
-                border: 2px solid rgb(255, 255, 255);
-                font-size: 24px;
-                justify-content: center;
-                align-items: center;
-            }
-
-            .serverName {
-                font-weight: bold;
-                max-width: 100%;
-                overflow-wrap: break-word;
-            }
         }
-    }
-}
 
-@media screen and (max-width: 1150px) {
-    #servers {
-        grid-template-columns: 1fr 1fr 1fr;
-    }
-}
-
-@media screen and (max-width: 850px) {
-    #servers {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media screen and (max-width: 550px) {
-    #servers {
-        grid-template-columns: 1fr;
+        .server_name {
+            font-weight: 900;
+            max-width: 100%;
+            overflow-wrap: break-word;
+        }
     }
 }

@@ -22,9 +22,8 @@ window.addEventListener('load', async () => {
         <span class="${pos === 1 ? 'first' : pos === 2 ? 'second' : pos === 3 ? 'third' : ''}">${pos}</span> 
         <img src="${user.avatar}"/> 
         <div> <span>${user.nickname}</span> <span>${user.username}</span> </div> 
-        <div> ${
-            type === 'overall' ? totalSpan.concat(messageSpan, voiceSpan) : type === 'message' ? messageSpan.concat(voiceSpan, totalSpan) : voiceSpan.concat(messageSpan, totalSpan)
-        } </div> 
+        <div> ${type === 'overall' ? totalSpan.concat(messageSpan, voiceSpan) : type === 'message' ? messageSpan.concat(voiceSpan, totalSpan) : voiceSpan.concat(messageSpan, totalSpan)
+            } </div> 
         </div>`;
     }
 });

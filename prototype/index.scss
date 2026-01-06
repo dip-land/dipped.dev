@@ -32,10 +32,8 @@ $terminal-bg-light: hsl(244, 20%, 12%);
 
 @font-face {
     font-family: 'JetBrains Mono';
-    src: url(/static/media/fonts/JetBrainsMono-SemiBold.ttf) format('truetype');
+    src: url(./JetBrainsMono-SemiBold.ttf) format('truetype');
 }
-
-@import url('https://fonts.googleapis.com/css2?family=WDXL+Lubrifont+SC&display=swap');
 
 @keyframes lineSlideIn {
     0% {
@@ -50,7 +48,6 @@ $terminal-bg-light: hsl(244, 20%, 12%);
 }
 
 @keyframes cursorBlink {
-
     0%,
     100% {
         opacity: 1;
@@ -70,15 +67,15 @@ $terminal-bg-light: hsl(244, 20%, 12%);
 }
 
 ::selection {
-    background: $accent-transparent-25;
-    color: unset;
-    text-shadow: none;
+  background: $accent-transparent-25;
+  color: unset;
+  text-shadow: none;
 }
 
 ::-moz-selection {
-    background: $accent-transparent-25;
-    color: unset;
-    text-shadow: none;
+  background: $accent-transparent-25;
+  color: unset;
+  text-shadow: none;
 }
 
 body {
@@ -87,11 +84,9 @@ body {
     color: $font-color;
     box-sizing: border-box;
     scrollbar-gutter: stable both-edges;
-
     .contents {
         display: contents;
     }
-
     .pre_wrap {
         word-break: break-word;
         white-space: pre-wrap;
@@ -358,7 +353,6 @@ main {
                             .symbol {
                                 color: $terminal-muted;
                                 margin-left: .25rem;
-                                margin-right: 0.75rem;
                             }
                         }
 
@@ -402,13 +396,8 @@ main {
                             svg {
                                 vertical-align: middle;
                                 display: block;
-
                             }
                         }
-                    }
-
-                    &.info {
-                        color: $accent;
                     }
                 }
 
@@ -481,17 +470,7 @@ main {
                     font-size: .9rem;
                     text-align: left;
                     cursor: pointer;
-                    transition: all .25s ease;
-
-                    .indicator {
-                        opacity: 0;
-                    }
-
-                    &:not(.inline) {
-                        .btn-text {
-                            flex: 1;
-                        }
-                    }
+                    transition: all .15s ease;
 
                     &.inline {
                         width: auto;
@@ -500,19 +479,6 @@ main {
                         padding: .35rem .6rem;
                         border: 1px solid color-mix(in srgb, $accent 40%, transparent);
                     }
-
-                    &:disabled {
-                        cursor: default;
-                        color: $accent-transparent-50;
-                    }
-
-                    &:hover:not(:disabled) {
-                        .indicator {
-                            opacity: 1;
-                        }
-
-                        background-color: $accent-transparent-25;
-                    }
                 }
 
                 .terminal-divider {
@@ -520,36 +486,17 @@ main {
                     align-items: center;
                     gap: 1rem;
                     margin: .75rem 0;
-
                     .divider-line {
                         flex: 1;
                         height: 1px;
                         background: linear-gradient(to right, transparent, $terminal-border-color, transparent);
                     }
-
                     .divider-text {
                         color: $terminal-muted;
                         font-size: .75rem;
                         text-transform: uppercase;
                         letter-spacing: .1em;
                     }
-                }
-
-                h1.status_text {
-                    margin: 0;
-                    font-size: 20rem;
-                    font-size: 10rem;
-                    line-height: 1;
-                    font-family: "WDXL Lubrifont SC", sans-serif;
-                    color: #d2ec5e;
-                }
-
-                .terminal-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                    gap: 1rem;
-                    padding: .5rem 0;
-                    width: 100%;
                 }
             }
 

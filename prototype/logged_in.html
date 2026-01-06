@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="./index.css" />
+</head>
+
+<body>
+    <nav>
+        <div class="left">
+            <a class="active">home</a>
+            <a>projects</a>
+            <a>role_eater</a>
+            <a>minecraft</a>
+            <a>status</a>
+        </div>
+        <div class="center">
+            <img src="./favicon.ico" alt="favicon">
+        </div>
+        <div class="right">
+            <a class="login hidden" target="popup"> Login </a>
+            <div id="user" class="user">
+                <img src="./favicon.ico" id="userAvatar" loading="lazy" alt="User Avatar" width="20px" height="20px" /><span id="username">dipped.</span>
+                <svg id="caret" class="rotated" width="20" height="20" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 14.5l5-5 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </div>
+            <div class="popout hidden" id="nav_popout">
+                <!-- <a href="/dashboard/me/">Profile</a> -->
+                <div id="logout">Logout</div>
+            </div>
+        </div>
+    </nav>
+    <main>
+        <div class="content-container">
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="left">
+                        <img src="./favicon.ico">
+                        <span>dipped@dev</span>
+                    </div>
+                    <div class="center">
+                        <span>~</span>
+                    </div>
+                    <div class="right"></div>
+                </div>
+                <div id="terminal-content" class="terminal-content">
+                    <div class="terminal-line command">
+                        <span class="prompt">
+                            <span class="user">dipped</span>
+                            <span class="at">@</span>
+                            <span class="host">dev</span>
+                            <span class="separator">:</span>
+                            <span class="path">~</span>
+                            <span class="symbol">$</span></span>
+                        <span class="content">bash ~/startup.sh</span>
+                    </div>
+                    <div class="terminal-line blank"></div>
+                    <div class="terminal-line header">
+                        <span class="content"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img"
+                                class="header-icon iconify iconify--mdi" width="25" height="25" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="m5.41 21l.71-4h-4l.35-2h4l1.06-6h-4l.35-2h4l.71-4h2l-.71 4h6l.71-4h2l-.71 4h4l-.35 2h-4l-1.06 6h4l-.35 2h-4l-.71 4h-2l.71-4h-6l-.71 4zM9.53 9l-1.06 6h6l1.06-6z">
+                                </path>
+                            </svg>Hi, I'm SeaBass (dipped.)</span>
+                    </div>
+                    <div class="terminal-inline-group">
+                        <div class="terminal-image inline-image">
+                            <img src="./blip.png" alt="Sebastian W" style="width: 120px;"> 
+                        </div>
+
+                        <div class="terminal-group inline" style="flex-direction: column;">
+
+                            <div class="terminal-line output complete">
+                                <span class="content">
+                                    <span style="color: rgb(205, 214, 244);">A nerd who loves making random things. I build fun and interesting coding projects and enjoy games like Elden Ring, Minecraft and Destiny. I'm interested in OpenSource, Web Dev and Discord Bots.</span>
+                                </span> 
+                            </div>
+                            <div class="terminal-group">
+                                <div class="terminal-inline-group">
+                                    <button class="terminal-button inline" data-href="/" data-external="false" style="--btn-color: var(--terminal-primary);">
+                                        <span class="btn-text" style="text-align: left;">home <span style="color: rgb(201, 209, 217); font-weight: bold;">[1]</span></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img"
+                                            class="btn-arrow iconify iconify--mdi" width="16" height="16"
+                                            viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M8.59 16.58L13.17 12L8.59 7.41L10 6l6 6l-6 6z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                    <button class="terminal-button inline" data-href="/" data-external="false" style="--btn-color: var(--terminal-primary);">
+                                        <span class="btn-text" style="text-align: left;">projects <span style="color: rgb(201, 209, 217); font-weight: bold;">[2]</span></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img"
+                                            class="btn-arrow iconify iconify--mdi" width="16" height="16"
+                                            viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M8.59 16.58L13.17 12L8.59 7.41L10 6l6 6l-6 6z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                    <button class="terminal-button inline" data-href="/" data-external="false" style="--btn-color: var(--terminal-primary);">
+                                        <span class="btn-text" style="text-align: left;">role_eater <span style="color: rgb(201, 209, 217); font-weight: bold;">[3]</span></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img"
+                                            class="btn-arrow iconify iconify--mdi" width="16" height="16"
+                                            viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M8.59 16.58L13.17 12L8.59 7.41L10 6l6 6l-6 6z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                    <button class="terminal-button inline" data-href="/" data-external="false" style="--btn-color: var(--terminal-primary);">
+                                        <span class="btn-text" style="text-align: left;">minecraft <span style="color: rgb(201, 209, 217); font-weight: bold;">[4]</span></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img"
+                                            class="btn-arrow iconify iconify--mdi" width="16" height="16"
+                                            viewBox="0 0 24 24">
+                                            <path fill="currentColor" d="M8.59 16.58L13.17 12L8.59 7.41L10 6l6 6l-6 6z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                    <button class="terminal-button inline" data-href="https://status.dipped.dev" data-external="true" style="--btn-color: var(--terminal-primary);">
+                                        <span class="btn-text" style="text-align: left;">status <span style="color: rgb(201, 209, 217); font-weight: bold;">[5]</span></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img"
+                                            class="btn-arrow iconify iconify--mdi" width="14" height="14"
+                                            viewBox="0 0 24 24">
+                                            <path fill="currentColor"
+                                                d="M14 3v2h3.59l-9.83 9.83l1.41 1.41L19 6.41V10h2V3m-2 16H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="terminal-line blank"></div>
+                    <div class="terminal-line command">
+                        <span class="prompt">
+                            <span class="user">dipped</span>
+                            <span class="at">@</span>
+                            <span class="host">dev</span>
+                            <span class="separator">:</span>
+                            <span class="path">~</span>
+                            <span class="symbol">$</span></span>
+                        <span class="cursor blink"></span>
+                    </div>
+                </div>
+                <div class="terminal-footer">
+                    <div class="left">
+                        <img src="./favicon.ico">
+                        <span>dipped@dev</span>
+                    </div>
+                    <div class="center">
+                        <span>Ready</span>
+                    </div>
+                    <div class="right">
+                        <span id="line_count">0 lines</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        let content = document.getElementById('terminal-content');
+        let line_count_element = document.getElementById('line_count');
+
+        line_count_element.innerText = `${content.children.length} lines`;
+    </script>
+</body>
+
+</html>

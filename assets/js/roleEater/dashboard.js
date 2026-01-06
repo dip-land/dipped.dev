@@ -1,13 +1,13 @@
 window.addEventListener('load', async () => {
     const accessToken = window.localStorage.getItem('access_token');
-    const container = document.getElementById('guilds');
+    const container = document.querySelector('.terminal-grid');
     if (!accessToken) return (container.innerHTML = '<h1>You must be logged in to display your servers.</h1>');
     const guilds = await (await fetch('/api/role-eater/servers/', { headers: { guilds: localStorage.getItem('guilds') } })).json();
     for (const guild of guilds) {
         const guildDiv = Object.assign(document.createElement('a'), { id: `${guild.id}`, classList: 'guild', href: `/role-eater/dashboard/${guild.id}` });
         const guildContent = Object.assign(document.createElement('div'), { classList: `guildContent` });
         const guildBackground = Object.assign(document.createElement('div'), { classList: `guildBackground` });
-        guildBackground.style.backgroundImage = `url("${guild.icon}")`;
+        guildBackground.style.backgroundImage = `url("${guild.banner ?? guild.icon}")`;
         const guildIcon = Object.assign(document.createElement('img'), { classList: 'guildIcon', src: `${guild.icon}` });
         guildIcon.addEventListener('error', (event) => {
             guildIcon.remove();

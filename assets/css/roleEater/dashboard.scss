@@ -1,3 +1,35 @@
+$background-1: hsl(244, 25%, 4%);
+$background-2: hsl(244, 24%, 6%);
+$background-3: hsl(244, 23%, 8%);
+$background-4: hsl(244, 22%, 10%);
+$background-5: hsl(244, 20%, 12%);
+$background-6: hsl(244, 19%, 14%);
+$accent: #106DFF;
+$accent-transparent-75: hsla(217, 100%, 53%, 0.75);
+$accent-transparent-50: hsla(217, 100%, 53%, 0.5);
+$accent-transparent-25: hsla(217, 100%, 53%, 0.25);
+$red: hsl(10, 100%, 53%);
+$red-transparent-75: hsla(10, 100%, 53%, 0.75);
+$red-transparent-50: hsla(10, 100%, 53%, 0.5);
+$red-transparent-25: hsla(10, 100%, 53%, 0.25);
+
+$nav-background-color: hsl(244, 25%, 4%);
+$nav-border-color: hsl(244, 12%, 28%);
+$nav-height: 60px;
+
+$font-color: white;
+$font-color-muted: rgb(200, 200, 200);
+
+$terminal-background-color: hsl(244, 27%, 4%);
+$terminal-border-color: hsl(244, 12%, 28%);
+$terminal-muted: rgb(155, 155, 155);
+$terminal-prompt: #106DFF;
+$terminal-user: #106DFF;
+$terminal-path: #106DFF;
+$terminal-primary: #106DFF;
+$terminal-accent: #106DFF;
+$terminal-bg-light: hsl(244, 20%, 12%);
+
 h2 {
     margin: 1rem 0 0;
     text-align: center;
@@ -10,27 +42,21 @@ h3 {
     font-size: 1rem;
 }
 
-#guilds {
-    margin: 1rem auto;
-    width: min(100%, 1340px);
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 1rem;
-    box-sizing: border-box;
-
+.terminal-grid {
     .guild {
         position: relative;
-        background-color: rgb(8, 8, 9);
+        background-color: $background-6;
         border-radius: 6px;
         cursor: pointer;
         overflow: hidden;
         color: aliceblue;
         transition: all ease 200ms;
         min-height: 174px;
+        border: 1px solid transparent;
 
         &:hover {
             color: white;
-            box-shadow: 0px 4px 15px 0px #cc335e;
+            border: 1px solid $accent;
             transform: translateY(-1px);
         }
 
@@ -51,7 +77,7 @@ h3 {
             padding: 1rem;
             text-align: center;
             align-items: center;
-            vertical-align: middle;
+            justify-content: center;
             inset: 0;
 
             .guildIcon {
@@ -67,28 +93,10 @@ h3 {
             }
 
             .guildName {
-                font-weight: bold;
+                font-weight: 900;
                 max-width: 100%;
                 overflow-wrap: break-word;
             }
         }
-    }
-}
-
-@media screen and (max-width: 1150px) {
-    #guilds {
-        grid-template-columns: 1fr 1fr 1fr;
-    }
-}
-
-@media screen and (max-width: 850px) {
-    #guilds {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media screen and (max-width: 550px) {
-    #guilds {
-        grid-template-columns: 1fr;
     }
 }

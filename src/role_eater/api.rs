@@ -4,24 +4,25 @@ use axum::{
     Json, Router,
     extract::{Path, Query, State},
     http::{StatusCode, header},
-    response::Html,
     routing::get,
 };
 use chrono::{DateTime, Duration, Local};
-use deadpool_diesel::postgres::{Object, Pool};
+use deadpool_diesel::postgres::Object;
 use diesel::{dsl::sql, prelude::*};
+use maud::Markup;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    AppState,
     models::*,
     schema::{
         activity_game_history, activity_music_history, activity_time_history, activity_user_data,
         guild_data, roles, user_data, voice_message_history,
     },
-    status_403_handler, status_500_error,
+    templates::status::{status_403_handler, error_500_handler},
 };
 
-pub fn router() -> Router<(Pool, Pool)> {
+pub fn router() -> Router<AppState> {
     Router::new()
         .route("/servers", get(servers_route_handler))
         .route("/{guild_id}", get(guild_route_handler))
@@ -44,17 +45,17 @@ pub fn router() -> Router<(Pool, Pool)> {
             "/{guild_id}/{user_id}/activity/music",
             get(guild_user_activity_music_route_handler),
         )
-        .fallback(status_403_handler)
+        .fallback(status_403_handler())
 }
 
 const DATE_FORMAT: &'static str = "%a %b %d %Y";
 const DATE_FORMAT_ISO8601_NO_MS: &'static str = "%Y-%m-%dT%H:%M:%S";
 
 async fn servers_route_handler(
-    State((guild_pool, _)): State<(Pool, Pool)>,
+    State(state): State<AppState>,
     headers: header::HeaderMap,
-) -> Result<Json<Vec<RoleEaterAPIServersResponse>>, (StatusCode, Html<String>)> {
-    let guild_connection = guild_pool.get().await.map_err(status_500_error)?;
+) -> Result<Json<Vec<RoleEaterAPIServersResponse>>, (StatusCode, Markup)> {
+    let guild_connection = state.guild_pool.get().await.map_err(error_500_handler)?;
 
     let mut user_guilds: Vec<String> = Vec::new();
     if headers.get("guilds").is_some_and(|value| value != "null") {
@@ -66,8 +67,8 @@ async fn servers_route_handler(
     let available_guilds: Vec<GuildData> = guild_connection
         .interact(|conn| guild_data::table.load(conn))
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?;
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?;
     let mut guilds: Vec<RoleEaterAPIServersResponse> = Vec::new();
 
     for guild in available_guilds {
@@ -85,20 +86,20 @@ async fn servers_route_handler(
     Ok(Json(guilds))
 }
 
-#[derive(Serialize, Deserialize)]
-struct RoleEaterAPIServersResponse {
-    id: String,
-    name: String,
-    icon: Option<String>,
-    banner: Option<String>,
+#[derive(Serialize, Deserialize, Clone)]
+pub struct RoleEaterAPIServersResponse {
+    pub id: String,
+    pub name: String,
+    pub icon: Option<String>,
+    pub banner: Option<String>,
 }
 
 async fn guild_route_handler(
-    State((guild_pool, user_pool)): State<(Pool, Pool)>,
+    State(state): State<AppState>,
     Path(guild_id): Path<String>,
-) -> Result<Json<RoleEaterAPIGuildResponse>, (StatusCode, Html<String>)> {
-    let guild_connection = guild_pool.get().await.map_err(status_500_error)?;
-    let user_connection = user_pool.get().await.map_err(status_500_error)?;
+) -> Result<Json<RoleEaterAPIGuildResponse>, (StatusCode, Markup)> {
+    let guild_connection = state.guild_pool.get().await.map_err(error_500_handler)?;
+    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
 
     let guid: String = guild_id.clone();
     let guild: GuildData = guild_connection
@@ -108,8 +109,8 @@ async fn guild_route_handler(
                 .first(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?;
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?;
 
     let guid: String = guild_id.clone();
     let users: Vec<RoleEaterAPIGuildUserHiddenSensitive> = user_connection
@@ -121,8 +122,8 @@ async fn guild_route_handler(
                 .load(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?
         .into_iter()
         .map(|user: UserData| RoleEaterAPIGuildUserHiddenSensitive {
             user_id: user.user_id,
@@ -148,8 +149,8 @@ async fn guild_route_handler(
                 .get_result(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?;
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?;
 
     let mut total_message_count: i64 = 0;
     let mut total_voice_time: f64 = 0.0;
@@ -193,10 +194,10 @@ struct RoleEaterAPIGuildResponse {
 
 // TODO: make this faster
 async fn guild_activity_route_handler(
-    State((_, user_pool)): State<(Pool, Pool)>,
+    State(state): State<AppState>,
     Path(guild_id): Path<String>,
-) -> Result<Json<RoleEaterAPIGuildActivityResponse>, (StatusCode, Html<String>)> {
-    let user_connection = user_pool.get().await.map_err(status_500_error)?;
+) -> Result<Json<RoleEaterAPIGuildActivityResponse>, (StatusCode, Markup)> {
+    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
 
     let guid = guild_id.clone();
     let users: Vec<UserData> = user_connection
@@ -207,8 +208,8 @@ async fn guild_activity_route_handler(
                 .load(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?;
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?;
 
     let guid = guild_id.clone();
     let voice_message_history: Vec<RoleEaterAPIVoiceMessageHistory> = user_connection
@@ -219,8 +220,8 @@ async fn guild_activity_route_handler(
                 .load(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?
         .into_iter()
         .map(
             |history: VoiceMessageHistory| RoleEaterAPIVoiceMessageHistory {
@@ -252,8 +253,8 @@ async fn guild_activity_route_handler(
                     .load(conn)
             })
             .await
-            .map_err(status_500_error)?
-            .map_err(status_500_error)?
+            .map_err(error_500_handler)?
+            .map_err(error_500_handler)?
             .into_iter()
             .map(
                 |history: ActivityTimeHistory| RoleEaterAPIActivityTimeHistory {
@@ -326,7 +327,7 @@ pub struct RoleEaterAPIGuildActivityResponse {
 async fn get_guild_users_positions(
     connection: Object,
     guild_id: String,
-) -> Result<RoleEaterAPIGuildPositionsResponse, (StatusCode, Html<String>)> {
+) -> Result<RoleEaterAPIGuildPositionsResponse, (StatusCode, Markup)> {
     let guid = guild_id.clone();
     let mut users: Vec<UserData> = connection
         .interact(move |conn| {
@@ -337,8 +338,8 @@ async fn get_guild_users_positions(
                 .load(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?;
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?;
 
     let total: Vec<String> = users.clone().into_iter().map(|user| user.user_id).collect();
 
@@ -357,10 +358,10 @@ async fn get_guild_users_positions(
 }
 
 async fn guild_positions_route_handler(
-    State((_, user_pool)): State<(Pool, Pool)>,
+    State(state): State<AppState>,
     Path(guild_id): Path<String>,
-) -> Result<Json<RoleEaterAPIGuildPositionsResponse>, (StatusCode, Html<String>)> {
-    let user_connection = user_pool.get().await.map_err(status_500_error)?;
+) -> Result<Json<RoleEaterAPIGuildPositionsResponse>, (StatusCode, Markup)> {
+    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
 
     let data = get_guild_users_positions(user_connection, guild_id.clone()).await?;
 
@@ -381,11 +382,11 @@ pub struct RoleEaterAPIGuildPositionsResponse {
 }
 
 async fn guild_user_route_handler(
-    State((guild_pool, user_pool)): State<(Pool, Pool)>,
+    State(state): State<AppState>,
     Path((guild_id, user_id)): Path<(String, String)>,
-) -> Result<Json<RoleEaterAPIGuildUserResponse>, (StatusCode, Html<String>)> {
-    let guild_connection = guild_pool.get().await.map_err(status_500_error)?;
-    let user_connection = user_pool.get().await.map_err(status_500_error)?;
+) -> Result<Json<RoleEaterAPIGuildUserResponse>, (StatusCode, Markup)> {
+    let guild_connection = state.guild_pool.get().await.map_err(error_500_handler)?;
+    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
 
     let guid = guild_id.clone();
     let guild: GuildData = guild_connection
@@ -395,8 +396,8 @@ async fn guild_user_route_handler(
                 .first(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?;
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?;
 
     let guid = guild_id.clone();
     let uid = user_id.clone();
@@ -409,8 +410,8 @@ async fn guild_user_route_handler(
                 .first(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?;
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?;
 
     let positions = get_guild_users_positions(user_connection, guild_id.clone()).await?;
 
@@ -469,10 +470,10 @@ pub struct RoleEaterAPIGuildUserResponse {
 }
 
 async fn guild_user_activity_route_handler(
-    State((_, user_pool)): State<(Pool, Pool)>,
+    State(state): State<AppState>,
     Path((guild_id, user_id)): Path<(String, String)>,
-) -> Result<Json<RoleEaterAPIGuildUserActivityResponse>, (StatusCode, Html<String>)> {
-    let user_connection = user_pool.get().await.map_err(status_500_error)?;
+) -> Result<Json<RoleEaterAPIGuildUserActivityResponse>, (StatusCode, Markup)> {
+    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
 
     let guid = guild_id.clone();
     let uid = user_id.clone();
@@ -485,8 +486,8 @@ async fn guild_user_activity_route_handler(
                 .load(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?
         .into_iter()
         .map(
             |history: VoiceMessageHistory| RoleEaterAPIVoiceMessageHistory {
@@ -512,8 +513,8 @@ async fn guild_user_activity_route_handler(
                 .load(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?
         .into_iter()
         .map(
             |history: ActivityTimeHistory| RoleEaterAPIActivityTimeHistory {
@@ -584,10 +585,10 @@ pub struct RoleEaterAPIGuildUserActivityResponse {
 }
 
 async fn guild_user_activity_latest_route_handler(
-    State((_, user_pool)): State<(Pool, Pool)>,
+    State(state): State<AppState>,
     Path((guild_id, user_id)): Path<(String, String)>,
-) -> Result<Json<RoleEaterAPIGuildUserActivityLatestResponse>, (StatusCode, Html<String>)> {
-    let user_connection = user_pool.get().await.map_err(status_500_error)?;
+) -> Result<Json<RoleEaterAPIGuildUserActivityLatestResponse>, (StatusCode, Markup)> {
+    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
 
     let uid = user_id.clone();
     let user_data: ActivityUserData = user_connection
@@ -597,8 +598,8 @@ async fn guild_user_activity_latest_route_handler(
                 .first(conn)
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?;
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?;
 
     let mut game_start_time: Option<String> = None;
     if user_data.current_game_start_time.is_some() {
@@ -660,11 +661,11 @@ struct GuildUserActivityExtraParams {
 }
 
 async fn guild_user_activity_game_route_handler(
-    State((_, user_pool)): State<(Pool, Pool)>,
+    State(state): State<AppState>,
     Path((guild_id, user_id)): Path<(String, String)>,
     query: Query<GuildUserActivityExtraParams>,
-) -> Result<Json<RoleEaterAPIGuildUserActivityGameResponse>, (StatusCode, Html<String>)> {
-    let user_connection = user_pool.get().await.map_err(status_500_error)?;
+) -> Result<Json<RoleEaterAPIGuildUserActivityGameResponse>, (StatusCode, Markup)> {
+    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
 
     let uid = user_id.clone();
     let user_data: Vec<RoleEaterAPIGuildUserActivityGameData> = user_connection
@@ -680,8 +681,8 @@ async fn guild_user_activity_game_route_handler(
                 .load(conn),
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?
         .into_iter()
         .map(
             |activity: ActivityGameHistory| RoleEaterAPIGuildUserActivityGameData {
@@ -714,11 +715,11 @@ pub struct RoleEaterAPIGuildUserActivityGameData {
 }
 
 async fn guild_user_activity_music_route_handler(
-    State((_, user_pool)): State<(Pool, Pool)>,
+    State(state): State<AppState>,
     Path((guild_id, user_id)): Path<(String, String)>,
     query: Query<GuildUserActivityExtraParams>,
-) -> Result<Json<RoleEaterAPIGuildUserActivityMusicResponse>, (StatusCode, Html<String>)> {
-    let user_connection = user_pool.get().await.map_err(status_500_error)?;
+) -> Result<Json<RoleEaterAPIGuildUserActivityMusicResponse>, (StatusCode, Markup)> {
+    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
 
     let uid = user_id.clone();
     let user_data: Vec<RoleEaterAPIGuildUserActivityMusicData> = user_connection
@@ -734,8 +735,8 @@ async fn guild_user_activity_music_route_handler(
                 .load(conn),
         })
         .await
-        .map_err(status_500_error)?
-        .map_err(status_500_error)?
+        .map_err(error_500_handler)?
+        .map_err(error_500_handler)?
         .into_iter()
         .map(
             |activity: ActivityMusicHistory| RoleEaterAPIGuildUserActivityMusicData {
