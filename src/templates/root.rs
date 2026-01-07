@@ -18,11 +18,13 @@ pub fn main(head: Vec<Markup>, body: Vec<Markup>) -> Markup {
 pub fn main_section(children: Vec<Markup>) -> Markup {
     html! {
         main {
+            div class="ad_container" {}
             div class="content-container" {
                 @for child in &children {
                     (child)
                 }
             }
+            div class="ad_container" {}
         }
     }
 }
