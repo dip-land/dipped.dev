@@ -1,13 +1,13 @@
 use axum::http::StatusCode;
 use maud::{Markup, html};
 
-use crate::templates::{head, nav, root, terminal, terminal_line};
+use crate::templates::{head, root, terminal, terminal_line};
 
 pub fn build_status_page(content: Markup) -> Markup {
     root::main(
         vec![head::main(), head::status()],
         vec![
-            nav::main(),
+            root::nav(),
             root::main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("curl /"),

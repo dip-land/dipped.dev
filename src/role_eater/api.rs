@@ -19,7 +19,7 @@ use crate::{
         activity_game_history, activity_music_history, activity_time_history, activity_user_data,
         guild_data, roles, user_data, voice_message_history,
     },
-    templates::status::{status_403_handler, error_500_handler},
+    templates::status::{error_500_handler, status_403_handler},
 };
 
 pub fn router() -> Router<AppState> {

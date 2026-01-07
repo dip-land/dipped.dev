@@ -1,4 +1,7 @@
-use crate::{AppState, templates::status::{error_404_handler, status_403_handler, status_404_handler}};
+use crate::{
+    AppState,
+    templates::status::{error_404_handler, status_403_handler, status_404_handler},
+};
 use axum::{
     Json, Router,
     body::{self, Body},
@@ -193,10 +196,7 @@ pub async fn get_servers() -> Vec<Server> {
         .await
         .unwrap();
 
-    let mcss_servers = res
-        .json::<Vec<McssServer>>()
-        .await
-        .unwrap();
+    let mcss_servers = res.json::<Vec<McssServer>>().await.unwrap();
 
     let mut parsed_servers: Vec<Server> = Vec::new();
     for server in mcss_servers {
@@ -326,9 +326,17 @@ pub async fn get_servers() -> Vec<Server> {
         }
     }
     parsed_servers.sort_by(|a, b| {
-        let a_values: Vec<u32> = a.start_date.split("/").map(|v| v.parse::<u32>().unwrap()).collect();
+        let a_values: Vec<u32> = a
+            .start_date
+            .split("/")
+            .map(|v| v.parse::<u32>().unwrap())
+            .collect();
         let a_date = NaiveDate::from_ymd_opt(a_values[2] as i32, a_values[0], a_values[1]).unwrap();
-        let b_values: Vec<u32> = b.start_date.split("/").map(|v| v.parse::<u32>().unwrap()).collect();
+        let b_values: Vec<u32> = b
+            .start_date
+            .split("/")
+            .map(|v| v.parse::<u32>().unwrap())
+            .collect();
         let b_date = NaiveDate::from_ymd_opt(b_values[2] as i32, b_values[0], b_values[1]).unwrap();
         b_date.cmp(&a_date)
     });

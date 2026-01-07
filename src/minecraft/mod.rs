@@ -4,7 +4,7 @@ use crate::{
     templates::{
         head,
         minecraft::server_card,
-        nav, root,
+        root,
         status::status_404_handler,
         terminal::{self, ButtonOptions},
         terminal_line,
@@ -54,7 +54,7 @@ async fn servers_page_handler(
     root::main(
         vec![head::main(), head::minecraft_home()],
         vec![
-            nav::main(),
+            root::nav(),
             root::main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("bash ~/minecraft"),
@@ -117,7 +117,7 @@ async fn server_page_handler(
     root::main(
         vec![head::main(), head::minecraft_server()],
         vec![
-            nav::main(),
+            root::nav(),
             root::main_section(vec![terminal::main(
                 vec![
                     terminal::inline_group(vec![

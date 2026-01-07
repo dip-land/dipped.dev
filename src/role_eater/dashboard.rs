@@ -1,6 +1,6 @@
 use crate::{
     AppState,
-    templates::{head, nav, root, status::status_404_handler, terminal, terminal_line},
+    templates::{head, root, status::status_404_handler, terminal, terminal_line},
     utilities::create_page,
 };
 use axum::{Router, routing::get};
@@ -62,7 +62,7 @@ pub fn generate_index() -> Markup {
     root::main(
         vec![head::main(), head::role_eater_dashboard()],
         vec![
-            nav::main(),
+            root::nav(),
             root::main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("bash ~/role_eater/dashboard"),

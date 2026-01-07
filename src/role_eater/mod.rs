@@ -1,6 +1,6 @@
 use crate::{
     AppState,
-    templates::{head, nav, root, status::status_404_handler, terminal, terminal_line},
+    templates::{head, root, status::status_404_handler, terminal, terminal_line},
 };
 use axum::{Router, routing::get};
 use maud::Markup;
@@ -19,7 +19,7 @@ pub fn generate_index() -> Markup {
     root::main(
         vec![head::main()],
         vec![
-            nav::main(),
+            root::nav(),
             root::main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("bash ~/role_eater"),
@@ -43,7 +43,7 @@ pub fn generate_index() -> Markup {
                                         button_number: Some(1),
                                         disabled: false,
                                         inline: true,
-                                        style: terminal::ButtonStyle::Default
+                                        style: terminal::ButtonStyle::Default,
                                     }),
                                     terminal::button(terminal::ButtonOptions {
                                         href: "/role-eater",
@@ -52,7 +52,7 @@ pub fn generate_index() -> Markup {
                                         button_number: Some(2),
                                         disabled: true,
                                         inline: true,
-                                        style: terminal::ButtonStyle::Default
+                                        style: terminal::ButtonStyle::Default,
                                     }),
                                     terminal::button(terminal::ButtonOptions {
                                         href: "https://discord.gg/pHWbSYd96G",
@@ -61,7 +61,7 @@ pub fn generate_index() -> Markup {
                                         button_number: Some(3),
                                         disabled: false,
                                         inline: true,
-                                        style: terminal::ButtonStyle::Default
+                                        style: terminal::ButtonStyle::Default,
                                     }),
                                     terminal::button(terminal::ButtonOptions {
                                         href: "https://github.com/dip-land/dipped.dev",
@@ -70,7 +70,7 @@ pub fn generate_index() -> Markup {
                                         button_number: Some(4),
                                         disabled: false,
                                         inline: true,
-                                        style: terminal::ButtonStyle::Default
+                                        style: terminal::ButtonStyle::Default,
                                     }),
                                 ]),
                             ],

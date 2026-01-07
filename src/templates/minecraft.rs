@@ -3,7 +3,7 @@ use maud::{Markup, html};
 use crate::minecraft::api::{Server, ServerStatus};
 
 pub fn server_card(server: Server) -> Markup {
-    let classlist ;
+    let classlist;
     if server.status == ServerStatus::Current {
         classlist = "server current";
     } else if server.status == ServerStatus::Archived {

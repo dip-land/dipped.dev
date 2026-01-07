@@ -23,7 +23,7 @@ pub mod utilities;
 
 use crate::{
     minecraft::api::{Server, ServerOnlineStatus, ServerStatus, get_server_stats, get_servers},
-    templates::{head, nav, root, status::status_404_handler, terminal, terminal_line},
+    templates::{head, root, status::status_404_handler, terminal, terminal_line},
 };
 
 // Route Modules
@@ -40,7 +40,9 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
-    for entry in glob(format!("{}**/*.scss", dotenv!("CSS_PATH")).as_str()).expect("Failed to read glob pattern") {
+    for entry in glob(format!("{}**/*.scss", dotenv!("CSS_PATH")).as_str())
+        .expect("Failed to read glob pattern")
+    {
         match entry {
             Ok(path) => {
                 let scss = fs::read_to_string(&path).unwrap();
@@ -159,7 +161,7 @@ pub fn generate_index() -> Markup {
     root::main(
         vec![head::main()],
         vec![
-            nav::main(),
+            root::nav(),
             root::main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("bash ~/startup.sh"),
