@@ -3,5 +3,4 @@
 .env
 
 /assets/css/**/*.css
-/assets/css/old
 /assets/vault
