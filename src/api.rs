@@ -5,8 +5,12 @@ use crate::{
 use axum::Router;
 
 pub fn router() -> Router<AppState> {
-    Router::<AppState>::new()
-        .nest("/minecraft", minecraft_api::router())
-        .nest("/role-eater", role_eater_api::router())
-        .fallback(status_403_handler())
+    let mut router = Router::<AppState>::new();
+    if (dotenv!("MINECRAFT_API_ENABLED") == "True") {
+        router = router.nest("/minecraft", minecraft_api::router());
+    }
+    if (dotenv!("ROLE_EATER_API_ENABLED") == "True") {
+        router = router.nest("/role-eater", role_eater_api::router());
+    }
+    router.fallback(status_403_handler())
 }

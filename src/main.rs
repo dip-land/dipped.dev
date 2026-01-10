@@ -121,12 +121,18 @@ async fn main() {
     let favicon_path = &assets_path.join("media/images/favicon.ico");
     let vault_path = &assets_path.join("vault");
 
+    let mut router = Router::<AppState>::new();
+    if (dotenv!("MINECRAFT_ROUTES_ENABLED") == "True") {
+        router = router.nest("/minecraft", minecraft::router(servers.clone()));
+    }
+    if (dotenv!("ROLE_EATER_ROUTES_ENABLED") == "True") {
+        router = router.nest("/role-eater", role_eater::router());
+    }
+
     let app = NormalizePathLayer::trim_trailing_slash().layer(
-        Router::<AppState>::new()
+        router
             .route("/", get(generate_index()))
             .nest("/api", api::router())
-            .nest("/minecraft", minecraft::router(servers.clone()))
-            .nest("/role-eater", role_eater::router())
             .nest_service("/favicon.ico", ServeFile::new(favicon_path))
             .nest_service("/static", ServeDir::new(&assets_path))
             .nest_service("/static/vault", ServeDir::new(vault_path))
