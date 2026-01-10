@@ -1,5 +1,5 @@
 //Discord Widget plugin
-//v2
+//v3
 //made by Dipped
 
 'use strict';
@@ -11,6 +11,8 @@ window.addEventListener('load', () => {
         let height = widget.getAttribute('height') ?? '500px';
         let footerText = widget.getAttribute('footerText') ?? '';
         let color = widget.getAttribute('color') ?? '#5865f2';
+        let buttonColor = widget.getAttribute('buttonColor') ?? color;
+        let buttonHoverColor = widget.getAttribute('buttonHoverColor') ?? `#${LDColor(buttonColor.replace('#', ''), -10)}`;
         let backgroundColor = widget.getAttribute('backgroundColor') ?? '#0c0c0d';
         let textColor = widget.getAttribute('textColor') ?? '#fff';
         let statusColor = widget.getAttribute('statusColor') ?? '#858585';
@@ -41,7 +43,8 @@ window.addEventListener('load', () => {
         widget.style.setProperty('--color', color);
         widget.style.setProperty('--bgColor', backgroundColor);
         widget.style.setProperty('--textColor', textColor);
-        widget.style.setProperty('--buttonColor', `#${LDColor(color.replace('#', ''), -10)}`);
+        widget.style.setProperty('--buttonColor', buttonColor);
+        widget.style.setProperty('--buttonHoverColor', buttonHoverColor);
         widget.style.setProperty('--statusColor', statusColor);
         //appending head, body and footer to the widget
         widget.append(head, body, footer);

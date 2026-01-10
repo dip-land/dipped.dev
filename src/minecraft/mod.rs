@@ -97,20 +97,20 @@ async fn server_page_handler(
 
     let mut main_group = vec![
         terminal_line::header(server.name.as_str()),
-        terminal_line::output(format!("Version: {}", server.version).as_str()),
-        terminal_line::output(format!("Status: {}", status).as_str()),
+        terminal_line::output_alt(format!("Version: {}", server.version).as_str()),
+        terminal_line::output_alt(format!("Status: {}", status).as_str()),
     ];
 
     if server.status == ServerStatus::Current {
-        main_group.push(terminal_line::output(
+        main_group.push(terminal_line::output_alt(
             format!("Players: {:?}", server.players.unwrap()).as_str(),
         ));
     }
 
-    main_group.push(terminal_line::output(
+    main_group.push(terminal_line::output_alt(
         format!("Start Date: {}", server.start_date).as_str(),
     ));
-    main_group.push(terminal_line::output(
+    main_group.push(terminal_line::output_alt(
         format!("End Date: {}", server.end_date).as_str(),
     ));
 
@@ -164,10 +164,10 @@ async fn server_page_handler(
                     ]),
                     terminal_line::blank(),
                     html! {
-                        div id="map-container" {
-                            iframe id="map-frame" {}
-                            div id="map-options" {
-                                select id="selected-dimension" {
+                        div id="map_container" {
+                            iframe id="map_frame" {}
+                            div id="map_options" {
+                                select id="selected_dimension" {
                                     option value="minecraft-overworld" selected { "Overworld" }
                                     option value="minecraft-the_nether" { "The Nether" }
                                     option value="minecraft-the_end" { "The End" }

@@ -6,61 +6,6 @@ window.addEventListener('load', async () => {
     let me = JSON.parse(window.localStorage.getItem('me') ?? '{}');
     let shouldReload = 0;
 
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-
-    gtag('config', 'G-LZR1KW152J');
-    gtag('consent', 'default', {
-        'ad_storage': 'denied',
-        'ad_user_data': 'denied',
-        'ad_personalization': 'denied',
-        'analytics_storage': 'denied'
-    });
-
-    let terminal_path = document.getElementById('terminal_path');
-    if (terminal_path && location.pathname !== "/") {
-        terminal_path.innerText = `~${location.pathname}`
-    }
-
-    let nav_home_link = document.getElementById('nav_home_link');
-    let nav_projects_link = document.getElementById('nav_projects_link');
-    let nav_role_eater_link = document.getElementById('nav_role_eater_link');
-    let nav_minecraft_link = document.getElementById('nav_minecraft_link');
-
-    if (location.pathname === '/') {
-        nav_home_link.classList.add('active');
-    } else if (location.pathname.includes('projects')) {
-        nav_projects_link.classList.add('active');
-    } else if (location.pathname.includes('role-eater')) {
-        nav_role_eater_link.classList.add('active');
-    } else if (location.pathname.includes('minecraft')) {
-        nav_minecraft_link.classList.add('active');
-    }
-
-    let content = document.getElementById('terminal-content');
-    let line_count_element = document.getElementById('line_count');
-
-    if (line_count_element && content) line_count_element.innerText = `${content.children.length} lines`;
-
-    let buttons = document.getElementsByClassName('terminal-button');
-
-    for (const button of buttons) {
-        const href = button.getAttribute('data-href');
-        const is_external = button.getAttribute('data-external');
-        button.addEventListener('click', () => {
-            if (href === "") {
-                window.history.back();
-                return;
-            }
-            if (is_external === 'true') {
-                window.open(href, '_blank');
-            } else {
-                window.open(`${location.origin}${href}`, '_self');
-            }
-        })
-    }
-
     if (window.opener) {
         if (accessToken === 'null') return (document.getElementById('login').style.display = 'block');
         window.localStorage.setItem('access_token', accessToken);
@@ -103,8 +48,8 @@ window.addEventListener('load', async () => {
     if (shouldReload === 1) location.reload();
     if (me.id) {
         const container = document.getElementById('user');
-        document.getElementById('userAvatar').src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.gif?size=32`;
-        document.getElementById('userAvatar').onerror = (e) => (e.target.src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.webp?size=32`);
+        document.getElementById('user_nav_avatar').src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.gif?size=32`;
+        document.getElementById('user_nav_avatar').onerror = (e) => (e.target.src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.webp?size=32`);
         document.getElementById('username').innerText = me.global_name;
         container.addEventListener('click', () => {
             document.getElementById('nav_popout').classList.toggle('hidden');

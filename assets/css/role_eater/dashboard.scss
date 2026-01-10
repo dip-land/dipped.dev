@@ -42,7 +42,7 @@ h3 {
     font-size: 1rem;
 }
 
-.terminal-grid {
+.terminal_grid {
     .guild {
         position: relative;
         background-color: $background-6;
@@ -60,7 +60,7 @@ h3 {
             transform: translateY(-2px) scale(1.02);
         }
 
-        .guildBackground {
+        .guild_background {
             background-repeat: no-repeat;
             background-size: cover;
             background-position: center;
@@ -69,7 +69,7 @@ h3 {
             inset: -12px;
         }
 
-        .guildContent {
+        .guild_content {
             display: flex;
             flex-direction: column;
             position: absolute;
@@ -80,7 +80,7 @@ h3 {
             justify-content: center;
             inset: 0;
 
-            .guildIcon {
+            .guild_icon {
                 display: flex;
                 border-radius: 50%;
                 width: 80px !important;
@@ -92,7 +92,7 @@ h3 {
                 align-items: center;
             }
 
-            .guildName {
+            .guild_name {
                 font-weight: 900;
                 max-width: 100%;
                 overflow-wrap: break-word;

@@ -23,6 +23,8 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/servers", get(servers_route_handler))
         .route("/servers/{server}", get(server_route_handler))
+        // TODO: add server stats route handler
+        .route("/servers/{server}/stats", get(server_route_handler))
         .route("/icons/{server}", get(server_icon_route_handler))
         .route("/maps/{server}", get(server_map_route_handler))
         .route("/worlds/{server}", get(server_world_route_handler))
@@ -196,7 +198,13 @@ pub async fn get_servers() -> Vec<Server> {
         .await
         .unwrap();
 
-    let mcss_servers = res.json::<Vec<McssServer>>().await.unwrap();
+    let mcss_servers = match res.json::<Vec<McssServer>>().await {
+        Ok(v) => v,
+        Err(err) => {
+            println!("{:?}", err);
+            Vec::new()
+        }
+    };
 
     let mut parsed_servers: Vec<Server> = Vec::new();
     for server in mcss_servers {

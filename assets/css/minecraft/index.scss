@@ -1,69 +1,65 @@
-$background-1: hsl(244, 25%, 4%);
-$background-2: hsl(244, 24%, 6%);
-$background-3: hsl(244, 23%, 8%);
-$background-4: hsl(244, 22%, 10%);
-$background-5: hsl(244, 20%, 12%);
-$background-6: hsl(244, 19%, 14%);
+$background_1: hsl(244, 25%, 4%);
+$background_2: hsl(244, 24%, 6%);
+$background_3: hsl(244, 23%, 8%);
+$background_4: hsl(244, 22%, 10%);
+$background_5: hsl(244, 20%, 12%);
+$background_6: hsl(244, 19%, 14%);
 $accent: #106DFF;
-$accent-transparent-75: hsla(217, 100%, 53%, 0.75);
-$accent-transparent-50: hsla(217, 100%, 53%, 0.5);
-$accent-transparent-25: hsla(217, 100%, 53%, 0.25);
+$accent_transparent_75: hsla(217, 100%, 53%, 0.75);
+$accent_transparent_50: hsla(217, 100%, 53%, 0.5);
+$accent_transparent_25: hsla(217, 100%, 53%, 0.25);
 $red: hsl(10, 100%, 53%);
-$red-transparent-75: hsla(10, 100%, 53%, 0.75);
-$red-transparent-50: hsla(10, 100%, 53%, 0.5);
-$red-transparent-25: hsla(10, 100%, 53%, 0.25);
+$red_transparent_75: hsla(10, 100%, 53%, 0.75);
+$red_transparent_50: hsla(10, 100%, 53%, 0.5);
+$red_transparent_25: hsla(10, 100%, 53%, 0.25);
 
-$nav-background-color: hsl(244, 25%, 4%);
-$nav-border-color: hsl(244, 12%, 28%);
-$nav-height: 60px;
+$nav_background_color: hsl(244, 25%, 4%);
+$nav_border_color: hsl(244, 12%, 28%);
+$nav_height: 60px;
 
-$font-color: white;
-$font-color-muted: rgb(200, 200, 200);
+$font_color: white;
+$font_color_muted: rgb(200, 200, 200);
 
-$terminal-background-color: hsl(244, 27%, 4%);
-$terminal-border-color: hsl(244, 12%, 28%);
-$terminal-muted: rgb(155, 155, 155);
-$terminal-prompt: #106DFF;
-$terminal-user: #106DFF;
-$terminal-path: #106DFF;
-$terminal-primary: #106DFF;
-$terminal-accent: #106DFF;
-$terminal-bg-light: hsl(244, 20%, 12%);
+$terminal_background_color: hsl(244, 27%, 4%);
+$terminal_border_color: hsl(244, 12%, 28%);
+$terminal_muted: rgb(155, 155, 155);
+$terminal_prompt: #106DFF;
+$terminal_user: #106DFF;
+$terminal_path: #106DFF;
+$terminal_primary: #106DFF;
+$terminal_accent: #106DFF;
+$terminal_gb_light: hsl(244, 20%, 12%);
 
-#sortingOptions {
+#sorting_options {
     padding: 1rem 0;
     display: flex;
     gap: 1rem;
     align-items: center;
     flex-direction: row;
-}
+    input, select {
+        display: inline;
+        background-color: rgb(33, 36, 45);
+        color: white;
+        padding: 8px 16px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        height: 33px;
 
-#sortingOptions input,
-#sortingOptions select {
-    display: inline;
-    background-color: rgb(33, 36, 45);
-    color: white;
-    padding: 8px 16px;
-    box-sizing: border-box;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    height: 33px;
-}
+        &:hover {
+            background-color: rgb(45, 49, 60);
+        }
+    }
 
-#sortingOptions input:hover,
-#sortingOptions select:hover {
-    background-color: rgb(45, 49, 60);
-}
+    select {
+        padding: 8px 0px 8px 16px;
+        border-right: 16px solid transparent;
+    }
 
-#sortingOptions select {
-    padding: 8px 0px 8px 16px;
-    border-right: 16px solid transparent;
-}
-
-#sortingOptions input[type='submit'],
-#sortingOptions #reset {
-    align-self: flex-end;
+    input[type='submit'], #reset {
+        align-self: flex-end;
+    }
 }
 
 h2 {
@@ -80,7 +76,7 @@ h3 {
 
 .server {
     position: relative;
-    background-color: $background-6;
+    background-color: $background_6;
     border-radius: 6px;
     cursor: pointer;
     overflow: hidden;

@@ -6,13 +6,15 @@ pub enum TerminalType {
     StatusPage,
 }
 
+const DOMAIN: &'static str = "dipped.dev";
+
 pub fn main(children: Vec<Markup>, terminal_type: TerminalType) -> Markup {
     html! {
         div class="terminal" {
-            div class="terminal-header" {
+            div class="terminal_header" {
                 div class="left" {
                     img src="/favicon.ico" {}
-                    span { "dipped.dev" }
+                    span { (DOMAIN) }
                 }
                 div class="center" {
                     @if terminal_type == TerminalType::Normal {
@@ -23,15 +25,15 @@ pub fn main(children: Vec<Markup>, terminal_type: TerminalType) -> Markup {
                 }
                 div class="right" {}
             }
-            div id="terminal-content" class="terminal-content" {
+            div id="terminal_content" class="terminal_content" {
                 @for child in &children {
                     (child)
                 }
             }
-            div class="terminal-footer" {
+            div class="terminal_footer" {
                 div class="left" {
                     img src="/favicon.ico" {}
-                    span { "dipped.dev" }
+                    span { (DOMAIN) }
                 }
                 div class="center" {
                     span { "Ready" }
@@ -61,10 +63,10 @@ pub enum ButtonStyle {
 }
 
 pub fn button(options: ButtonOptions) -> Markup {
-    let mut classlist = "terminal-button";
+    let mut classlist = "terminal_button";
 
     if options.inline {
-        classlist = "terminal-button inline";
+        classlist = "terminal_button inline";
     }
 
     let mut svg = html! {
@@ -87,7 +89,7 @@ pub fn button(options: ButtonOptions) -> Markup {
                 @if options.style == ButtonStyle::Action {
                     span class="indicator" { "▶" }
                 }
-                span class="btn-text" style="text-align: left;" {
+                span class="btn_text" style="text-align: left;" {
                     (options.content);
                     @if options.button_number.is_some() {
                         span style="color: rgb(201, 209, 217); font-weight: bold;" { "[" (options.button_number.unwrap()) "]" }
@@ -100,7 +102,7 @@ pub fn button(options: ButtonOptions) -> Markup {
                 @if options.style == ButtonStyle::Action {
                     span class="indicator" { "▶" }
                 }
-                span class="btn-text" style="text-align: left;" {
+                span class="btn_text" style="text-align: left;" {
                     (options.content);
                     @if options.button_number.is_some() {
                         span style="color: rgb(201, 209, 217); font-weight: bold;" { "[" (options.button_number.unwrap()) "]" }
@@ -115,19 +117,19 @@ pub fn button(options: ButtonOptions) -> Markup {
 
 pub fn divider(content: &str) -> Markup {
     html! {
-        div class="terminal-divider" {
-            span class="divider-line" {}
-            span class="divider-text" { (content) }
-            span class="divider-line" {}
+        div class="terminal_divider" {
+            span class="divider_line" {}
+            span class="divider_text" { (content) }
+            span class="divider_line" {}
         }
     }
 }
 
 pub fn group(children: Vec<Markup>, inline: bool, style: &str) -> Markup {
-    let mut class = "terminal-group";
+    let mut class = "terminal_group";
 
     if inline {
-        class = "terminal-group inline"
+        class = "terminal_group inline"
     }
 
     html! {
@@ -141,7 +143,7 @@ pub fn group(children: Vec<Markup>, inline: bool, style: &str) -> Markup {
 
 pub fn inline_group(children: Vec<Markup>) -> Markup {
     html! {
-        div class="terminal-inline-group" {
+        div class="terminal_inline_group" {
             @for child in &children {
                 (child)
             }
@@ -150,9 +152,9 @@ pub fn inline_group(children: Vec<Markup>) -> Markup {
 }
 
 pub fn image(src: &str, alt: &str, inline: bool, style: &str) -> Markup {
-    let mut class = "terminal-image";
+    let mut class = "terminal_image";
     if inline {
-        class = "terminal-image inline-image"
+        class = "terminal_image inline_image"
     }
     html! {
         div class=(class) {
@@ -163,10 +165,47 @@ pub fn image(src: &str, alt: &str, inline: bool, style: &str) -> Markup {
 
 pub fn grid(children: Vec<Markup>) -> Markup {
     html! {
-        div class="terminal-grid" {
+        div class="terminal_grid" {
             @for child in &children {
                 (child)
             }
         }
+    }
+}
+
+pub fn table(head: Vec<&str>, body: Vec<Markup>) -> Markup {
+    html! {
+        table class="terminal_table" {
+            tr {
+                @for child in &head {
+                    th { (child) }
+                }
+            }
+            @for child in &body {
+                (child)
+            }
+        }
+    }
+}
+
+pub fn table_row(children: Vec<Markup>) -> Markup {
+    html! {
+        tr {
+            @for child in &children {
+                (child)
+            }
+        }
+    }
+}
+
+pub fn table_data(content: &str) -> Markup {
+    html! {
+        td { (content) }
+    }
+}
+
+pub fn table_data_alt(content: Markup) -> Markup {
+    html! {
+        td { (content) }
     }
 }

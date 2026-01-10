@@ -21,7 +21,7 @@ pub fn main_section(children: Vec<Markup>) -> Markup {
     html! {
         main {
             div class="ad_container" {}
-            div class="content-container" {
+            div class="content_container" {
                 @for child in &children {
                     (child)
                 }
@@ -33,7 +33,7 @@ pub fn main_section(children: Vec<Markup>) -> Markup {
 
 pub fn nav() -> Markup {
     html! {
-        div class="notification-bar" {}
+        div class="notification_bar" {}
         script src="https://uptime.betterstack.com/widgets/announcement.js" data-id="182161" async type="text/javascript" {}
         nav {
             div class="left" {
@@ -46,9 +46,9 @@ pub fn nav() -> Markup {
             div class="center" {}
             div class="right" {
                 a class="login" target="popup" { "Login" }
-                div class="user-popout" {
+                div class="user_popout" {
                     div id="user" class="user hidden" {
-                        img id="userAvatar" loading="lazy" alt="User Avatar" width="20px" height="20px" {}
+                        img id="user_nav_avatar" loading="lazy" alt="User Avatar" width="20px" height="20px" {}
                         span id="username" {}
                         (caret::main(true))
                     }

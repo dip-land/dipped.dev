@@ -6,6 +6,7 @@ pub fn main() -> Markup {
         link rel="preconnect" href="https://discord.com" {}
         script defer src="/static/plugins/notification/index.js" {}
         script async src="/static/js/auth.js" {}
+        script async src="/static/js/index.js" {}
         script async src="https://www.googletagmanager.com/gtag/js?id=G-LZR1KW152J" {}
         link rel="stylesheet" type="text/css" href="/static/css/index.css" {}
     }
@@ -32,7 +33,16 @@ pub fn minecraft_server() -> Markup {
 
 pub fn role_eater_dashboard() -> Markup {
     html! {
-        script async src="/static/js/roleEater/dashboard.js" {}
-        link rel="stylesheet" type="text/css" href="/static/css/roleEater/dashboard.css" {}
+        script async src="/static/js/role_eater/dashboard.js" {}
+        link rel="stylesheet" type="text/css" href="/static/css/role_eater/dashboard.css" {}
+    }
+}
+
+pub fn role_eater_guild() -> Markup {
+    html! {
+        script async src="/static/js/role_eater/guild.js" {}
+        script async src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js" {}
+        script async src="https://cdn.jsdelivr.net/npm/chart.js" {}
+        link rel="stylesheet" type="text/css" href="/static/css/role_eater/guild/index.css" {}
     }
 }

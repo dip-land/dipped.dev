@@ -94,10 +94,10 @@ pub struct RoleEaterAPIServersResponse {
     pub banner: Option<String>,
 }
 
-async fn guild_route_handler(
-    State(state): State<AppState>,
-    Path(guild_id): Path<String>,
-) -> Result<Json<RoleEaterAPIGuildResponse>, (StatusCode, Markup)> {
+pub async fn guild_handler(
+    state: AppState,
+    guild_id: String,
+) -> Result<RoleEaterAPIGuildResponse, (StatusCode, Markup)> {
     let guild_connection = state.guild_pool.get().await.map_err(error_500_handler)?;
     let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
 
@@ -162,7 +162,7 @@ async fn guild_route_handler(
 
     let stat_total: f64 = total_voice_time + total_message_count as f64;
 
-    Ok(Json(RoleEaterAPIGuildResponse {
+    Ok(RoleEaterAPIGuildResponse {
         guild_id: guild.guild_id,
         name: guild.name,
         icon: guild.icon,
@@ -174,22 +174,31 @@ async fn guild_route_handler(
         role_count: role_count,
         user_count: users.len() as i64,
         users,
-    }))
+    })
+}
+
+async fn guild_route_handler(
+    State(state): State<AppState>,
+    Path(guild_id): Path<String>,
+) -> Result<Json<RoleEaterAPIGuildResponse>, (StatusCode, Markup)> {
+    let guild = guild_handler(state, guild_id).await.map_err(|e| e)?;
+
+    Ok(Json(guild))
 }
 
 #[derive(Serialize, Deserialize)]
-struct RoleEaterAPIGuildResponse {
-    guild_id: String,
-    name: String,
-    icon: Option<String>,
-    banner: Option<String>,
-    stat_exclusion_channels: Vec<String>,
-    voice_time: f64,
-    message_count: i64,
-    stat_total: f64,
-    role_count: i64,
-    user_count: i64,
-    users: Vec<RoleEaterAPIGuildUserHiddenSensitive>,
+pub struct RoleEaterAPIGuildResponse {
+    pub guild_id: String,
+    pub name: String,
+    pub icon: Option<String>,
+    pub banner: Option<String>,
+    pub stat_exclusion_channels: Vec<String>,
+    pub voice_time: f64,
+    pub message_count: i64,
+    pub stat_total: f64,
+    pub role_count: i64,
+    pub user_count: i64,
+    pub users: Vec<RoleEaterAPIGuildUserHiddenSensitive>,
 }
 
 // TODO: make this faster
@@ -771,19 +780,19 @@ pub struct RoleEaterAPIGuildUserActivityMusicData {
 }
 
 #[derive(Serialize, Deserialize)]
-struct RoleEaterAPIGuildUserHiddenSensitive {
-    user_id: String,
-    guild_id: String,
-    username: String,
-    display_name: Option<String>,
-    global_name: Option<String>,
-    nickname: Option<String>,
-    avatar: Option<String>,
-    banner: Option<String>,
-    message_count: i64,
-    voice_time: f64,
-    total: f64,
-    user_left: bool,
+pub struct RoleEaterAPIGuildUserHiddenSensitive {
+    pub user_id: String,
+    pub guild_id: String,
+    pub username: String,
+    pub display_name: Option<String>,
+    pub global_name: Option<String>,
+    pub nickname: Option<String>,
+    pub avatar: Option<String>,
+    pub banner: Option<String>,
+    pub message_count: i64,
+    pub voice_time: f64,
+    pub total: f64,
+    pub user_left: bool,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

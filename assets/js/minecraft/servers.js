@@ -19,14 +19,14 @@ window.addEventListener("load", async () => {
 	}
 	if (server.status === "NOT FOUND" || server.status === "OKAY") return;
 
-	if (document.getElementById("map-frame")) {
-		document.getElementById("map-frame").src =
+	if (document.getElementById("map_frame")) {
+		document.getElementById("map_frame").src =
 			`/minecraft/maps/${server.identifier}/minecraft-overworld/index.html`;
 
 		document
-			.getElementById("selected-dimension")
+			.getElementById("selected_dimension")
 			.addEventListener("change", (event) => {
-				document.getElementById("map-frame").src =
+				document.getElementById("map_frame").src =
 					`/minecraft/maps/${server.identifier}/${event.target.value}/index.html`;
 			});
 	}
@@ -51,7 +51,7 @@ window.addEventListener("load", async () => {
 	// }
 
 	if (server.status !== "Current") {
-		document.getElementById("player-container").remove();
+		document.getElementById("player_container")?.remove();
 	}
 
 	try {
@@ -60,10 +60,10 @@ window.addEventListener("load", async () => {
 		).json();
 		for (const map of availableMaps) {
 			if (map.includes("minecraft:")) continue;
-			document.getElementById("selected-dimension").innerHTML +=
+			document.getElementById("selected_dimension").innerHTML +=
 				`<option value="${map.replace(":", "-")}">${map.replace(":", " ")}</option>`;
 		}
 	} catch (error) {
-		document.getElementById("map-container").style.display = "none";
+		document.getElementById("map_container").style.display = "none";
 	}
 });

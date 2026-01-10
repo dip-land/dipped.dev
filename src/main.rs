@@ -1,18 +1,16 @@
-use std::{fs, sync::Arc};
-
 use axum::{Router, ServiceExt, extract::Request, routing::get};
 use deadpool_diesel::postgres::Pool;
 use dotenv::dotenv;
 use futures::future::join_all;
-use glob::glob;
-use grass;
 use maud::Markup;
+use std::{env, path::Path, sync::Arc};
 use tokio::sync::Mutex;
 use tower::layer::Layer;
 use tower_http::{
     normalize_path::NormalizePathLayer,
     services::{ServeDir, ServeFile},
 };
+
 #[macro_use]
 extern crate dotenv_codegen;
 
@@ -40,30 +38,17 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
-    for entry in glob(format!("{}**/*.scss", dotenv!("CSS_PATH")).as_str())
-        .expect("Failed to read glob pattern")
-    {
-        match entry {
-            Ok(path) => {
-                let scss = fs::read_to_string(&path).unwrap();
-                match grass::from_string(scss, &grass::Options::default()) {
-                    Ok(css) => {
-                        let path = path.to_str().unwrap().replace(".scss", ".css");
-                        match fs::write(&path, css) {
-                            Ok(_) => {
-                                println!("Wrote File {:?}", path);
-                            }
-                            Err(e) => println!("{:?}", e),
-                        }
-                    }
-                    Err(e) => println!("{:?} {:?}", &path, e),
-                }
-            }
-            Err(e) => println!("{:?}", e),
-        }
+    dotenv().ok();
+
+    let args: Vec<String> = env::args().collect();
+    let mut port = dotenv!("WEB_PORT");
+
+    if args.len() >= 3 {
+        port = args[2].as_str();
     }
 
-    dotenv().ok();
+    #[cfg(debug_assertions)]
+    debug_fn();
 
     let servers = join_all(get_servers().await.iter().map(|server| async {
         let mut server_online_status = ServerOnlineStatus::Offline;
@@ -132,25 +117,25 @@ async fn main() {
         user_pool,
     };
 
+    let assets_path = Path::new(dotenv!("ASSETS_PATH"));
+    let favicon_path = &assets_path.join("media/images/favicon.ico");
+    let vault_path = &assets_path.join("vault");
+
     let app = NormalizePathLayer::trim_trailing_slash().layer(
         Router::<AppState>::new()
             .route("/", get(generate_index()))
             .nest("/api", api::router())
             .nest("/minecraft", minecraft::router(servers.clone()))
             .nest("/role-eater", role_eater::router())
-            .nest_service(
-                "/favicon.ico",
-                ServeFile::new("assets/media/images/favicon.ico"),
-            )
-            .nest_service("/static", ServeDir::new("assets"))
-            .nest_service("/static/vault", ServeDir::new("private"))
+            .nest_service("/favicon.ico", ServeFile::new(favicon_path))
+            .nest_service("/static", ServeDir::new(&assets_path))
+            .nest_service("/static/vault", ServeDir::new(vault_path))
             .fallback(status_404_handler())
             .with_state(state),
     );
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:6570")
-        .await
-        .unwrap();
+    let address = format!("127.0.0.1:{}", port);
+    let listener = tokio::net::TcpListener::bind(address).await.unwrap();
     println!("listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, ServiceExt::<Request>::into_make_service(app))
         .await
@@ -238,4 +223,34 @@ pub fn generate_index() -> Markup {
             )]),
         ],
     )
+}
+
+#[cfg(debug_assertions)]
+fn debug_fn() {
+    use glob::glob;
+    use grass;
+    use std::fs;
+
+    for entry in glob(format!("{}**/*.scss", dotenv!("CSS_PATH")).as_str())
+        .expect("Failed to read glob pattern")
+    {
+        match entry {
+            Ok(path) => {
+                let scss = fs::read_to_string(&path).unwrap();
+                match grass::from_string(scss, &grass::Options::default()) {
+                    Ok(css) => {
+                        let path = path.to_str().unwrap().replace(".scss", ".css");
+                        match fs::write(&path, css) {
+                            Ok(_) => {
+                                println!("Wrote File {:?}", path);
+                            }
+                            Err(e) => println!("{:?}", e),
+                        }
+                    }
+                    Err(e) => println!("{:?} {:?}", &path, e),
+                }
+            }
+            Err(e) => println!("{:?}", e),
+        }
+    }
 }
