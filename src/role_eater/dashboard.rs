@@ -12,11 +12,11 @@ use crate::{
 use axum::{
     Router,
     extract::{Path, State},
+    http::StatusCode,
     routing::get,
 };
 use maud::{Markup, html};
 use num_format::{Locale, ToFormattedString};
-use reqwest::StatusCode;
 
 pub fn router() -> Router<AppState> {
     Router::new()
