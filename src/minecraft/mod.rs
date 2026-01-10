@@ -2,11 +2,9 @@ use crate::{
     AppState,
     minecraft::api::{Server, ServerOnlineStatus, ServerStatus, SortingOptions},
     templates::{
-        head,
-        minecraft::server_card,
-        root,
+        head, root,
         status::status_404_handler,
-        terminal::{self, ButtonOptions},
+        terminal::{self, ButtonOptions, TerminalCardOptions},
         terminal_line,
     },
 };
@@ -48,7 +46,24 @@ async fn servers_page_handler(
     let servers = servers.clone();
     let server_templates = servers
         .iter()
-        .map(|server| server_card(server.to_owned()))
+        .map(|server| {
+            let classlist;
+            if server.status == ServerStatus::Current {
+                classlist = "server current";
+            } else if server.status == ServerStatus::Archived {
+                classlist = "server archived";
+            } else {
+                classlist = "server deleted";
+            }
+            terminal::terminal_card(TerminalCardOptions {
+                classlist,
+                href: &format!("/minecraft/{}", server.identifier),
+                background_src: &format!("/api/minecraft/icons/{}", server.id),
+                icon_src: &format!("/api/minecraft/icons/{}", server.id),
+                icon_alt: &server.name,
+                content: &server.name,
+            })
+        })
         .collect::<Vec<_>>();
 
     root::main(
