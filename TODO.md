@@ -1,0 +1,5 @@
+- [ ] Replace all html files with templates
+- [ ] Merge all css that can be combined into 1 file
+- [ ] Add themes for role eater user images and guild image
+- [ ] Add site-wide themes
+- [ ] Merge r6 domain with this repo
