@@ -6,7 +6,7 @@ pub enum TerminalType {
     StatusPage,
 }
 
-const DOMAIN: &'static str = "dipped.dev";
+const DOMAIN: &str = "dipped.dev";
 
 pub fn main(children: Vec<Markup>, terminal_type: TerminalType) -> Markup {
     html! {
@@ -225,7 +225,7 @@ pub fn terminal_card(options: TerminalCardOptions) -> Markup {
         a class=(classlist) href=(options.href) {
             div class="background" style=(format!("background-image: url('{}');", options.background_src)) {}
             div class="content_container" {
-                @if options.icon_src.len() > 0 {
+                @if !options.icon_src.is_empty() {
                     img class="icon" src=(options.icon_src) width="140px" height="140px" alt=(options.icon_alt) {}
                 } @else {
                     span class="icon" { (options.content) }

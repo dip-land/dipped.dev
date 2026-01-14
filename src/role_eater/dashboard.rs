@@ -182,22 +182,22 @@ async fn guild_page(
 
 // Takes numbers formatted with commas and converts them to be more readable eg. 1,658,512 -> 1.7M
 pub fn format_number(input: String) -> String {
-    let split: Vec<&str> = (&input).split(",").collect();
+    let split: Vec<&str> = (input).split(",").collect();
     if split.len() == 1 {
-        return input;
+        input
     } else if split.len() == 2 {
         let parsed = input.replace(",", "").as_str().parse::<f64>().unwrap() / 100.0;
         let parsed = parsed.round() / 10.0;
-        return format!("{}K", parsed);
+        format!("{}K", parsed)
     } else if split.len() == 3 {
         let parsed = input.replace(",", "").as_str().parse::<f64>().unwrap() / 100000.0;
         let parsed = parsed.round() / 10.0;
-        return format!("{}M", parsed);
+        format!("{}M", parsed)
     } else if split.len() == 4 {
         let parsed = input.replace(",", "").as_str().parse::<f64>().unwrap() / 100000000.0;
         let parsed = parsed.round() / 10.0;
-        return format!("{}B", parsed);
+        format!("{}B", parsed)
     } else {
-        return "THIS SHOULD NEVER OCCUR".to_string();
+        "THIS SHOULD NEVER OCCUR".to_string()
     }
 }

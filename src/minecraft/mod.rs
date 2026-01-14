@@ -168,7 +168,7 @@ async fn server_page_handler(
                                     external: true,
                                     content: "Download World File",
                                     button_number: None,
-                                    disabled: server.world_download == false,
+                                    disabled: !server.world_download,
                                     inline: false,
                                     style: terminal::ButtonStyle::Default,
                                 }),
