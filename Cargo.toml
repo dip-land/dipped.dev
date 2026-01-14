@@ -1,6 +1,6 @@
 [package]
 name = "dipped_dev"
-version = "0.2.0"
+version = "2.0.0"
 edition = "2024"
 
 [dependencies]
@@ -22,7 +22,3 @@ tokio = { version = "1.49.0", features = ["full"] }
 tokio-util = "0.7.18"
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = ["fs", "normalize-path"] }
-
-[build-dependencies]
-glob = "0.3.3"
-grass = "0.13.4"

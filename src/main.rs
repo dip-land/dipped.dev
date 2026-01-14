@@ -1,3 +1,7 @@
+#[macro_use]
+extern crate dotenv_codegen;
+extern crate dotenv;
+
 use axum::{Router, ServiceExt, extract::Request, routing::get};
 use deadpool_diesel::postgres::Pool;
 use dotenv::dotenv;
@@ -10,9 +14,6 @@ use tower_http::{
     normalize_path::NormalizePathLayer,
     services::{ServeDir, ServeFile},
 };
-
-#[macro_use]
-extern crate dotenv_codegen;
 
 pub mod models;
 pub mod schema;
@@ -54,7 +55,7 @@ async fn main() {
         let mut server_online_status = ServerOnlineStatus::Offline;
         let mut player_count = 0;
         if let ServerStatus::Current = server.status {
-            let server_stats = Some(get_server_stats(server.clone().id).await).unwrap();
+            let server_stats = get_server_stats(server.clone().id).await;
             player_count = server_stats.latest.players_online.unwrap();
             server_online_status = ServerOnlineStatus::Online;
         }
@@ -73,8 +74,8 @@ async fn main() {
             players: Some(player_count),
             path: server.clone().path,
             world_download: server.world_download,
-            pack_dowload: server.pack_dowload,
-            map_avaliable: server.map_avaliable,
+            pack_download: server.pack_download,
+            map_available: server.map_available,
         }
     }))
     .await;
@@ -121,14 +122,20 @@ async fn main() {
     let favicon_path = &assets_path.join("media/images/favicon.ico");
     let vault_path = &assets_path.join("vault");
 
+    let mut router = Router::<AppState>::new();
+    if (dotenv!("MINECRAFT_ROUTES_ENABLED") == "True") {
+        router = router.nest("/minecraft", minecraft::router(servers.clone()));
+    }
+    if (dotenv!("ROLE_EATER_ROUTES_ENABLED") == "True") {
+        router = router.nest("/role-eater", role_eater::router());
+    }
+
     let app = NormalizePathLayer::trim_trailing_slash().layer(
-        Router::<AppState>::new()
+        router
             .route("/", get(generate_index()))
             .nest("/api", api::router())
-            .nest("/minecraft", minecraft::router(servers.clone()))
-            .nest("/role-eater", role_eater::router())
             .nest_service("/favicon.ico", ServeFile::new(favicon_path))
-            .nest_service("/static", ServeDir::new(&assets_path))
+            .nest_service("/static", ServeDir::new(assets_path))
             .nest_service("/static/vault", ServeDir::new(vault_path))
             .fallback(status_404_handler())
             .with_state(state),

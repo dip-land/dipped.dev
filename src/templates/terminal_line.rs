@@ -1,7 +1,7 @@
 use maud::{Markup, html};
 
-const USER: &'static str = "dipped";
-const HOST: &'static str = "dev";
+const USER: &str = "dipped";
+const HOST: &str = "dev";
 
 pub fn blank() -> Markup {
     html! {

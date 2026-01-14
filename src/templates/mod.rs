@@ -1,6 +1,5 @@
 pub mod caret;
 pub mod head;
-pub mod minecraft;
 pub mod root;
 pub mod status;
 pub mod terminal;

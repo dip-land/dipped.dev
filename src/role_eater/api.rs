@@ -48,8 +48,8 @@ pub fn router() -> Router<AppState> {
         .fallback(status_403_handler())
 }
 
-const DATE_FORMAT: &'static str = "%a %b %d %Y";
-const DATE_FORMAT_ISO8601_NO_MS: &'static str = "%Y-%m-%dT%H:%M:%S";
+const DATE_FORMAT: &str = "%a %b %d %Y";
+const DATE_FORMAT_ISO8601_NO_MS: &str = "%Y-%m-%dT%H:%M:%S";
 
 async fn servers_route_handler(
     State(state): State<AppState>,
@@ -171,7 +171,7 @@ pub async fn guild_handler(
         voice_time: total_voice_time,
         message_count: total_message_count,
         stat_total,
-        role_count: role_count,
+        role_count,
         user_count: users.len() as i64,
         users,
     })
@@ -181,7 +181,7 @@ async fn guild_route_handler(
     State(state): State<AppState>,
     Path(guild_id): Path<String>,
 ) -> Result<Json<RoleEaterAPIGuildResponse>, (StatusCode, Markup)> {
-    let guild = guild_handler(state, guild_id).await.map_err(|e| e)?;
+    let guild = guild_handler(state, guild_id).await?;
 
     Ok(Json(guild))
 }
@@ -843,7 +843,7 @@ fn cmp_f64(a: &f64, b: &f64) -> Ordering {
     } else if a > b {
         return Ordering::Greater;
     }
-    return Ordering::Equal;
+    Ordering::Equal
 }
 
 fn cmp_i64(a: &i64, b: &i64) -> Ordering {
@@ -852,5 +852,5 @@ fn cmp_i64(a: &i64, b: &i64) -> Ordering {
     } else if a > b {
         return Ordering::Greater;
     }
-    return Ordering::Equal;
+    Ordering::Equal
 }
