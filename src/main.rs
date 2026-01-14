@@ -42,7 +42,7 @@ async fn main() {
     dotenv().ok();
 
     let args: Vec<String> = env::args().collect();
-    let mut port = dotenv!("WEB_PORT");
+    let mut port = dotenv!("MAIN_WEB_PORT");
 
     if args.len() >= 3 {
         port = args[2].as_str();

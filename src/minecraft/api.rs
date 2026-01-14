@@ -190,7 +190,7 @@ pub async fn get_servers() -> Vec<Server> {
     let res = client
         .get(format!(
             "http://{}:{}/api/v2/servers",
-            dotenv!("INTERNAL_IP"),
+            dotenv!("HOST_IP"),
             dotenv!("MCSS_PORT")
         ))
         .header("apiKey", dotenv!("MCSS_KEY"))
@@ -353,7 +353,7 @@ pub async fn get_server_stats(id: String) -> McssServerStats {
     let res = client
         .get(format!(
             "http://{}:{}/api/v2/servers/{}/stats",
-            dotenv!("INTERNAL_IP"),
+            dotenv!("HOST_IP"),
             dotenv!("MCSS_PORT"),
             id
         ))
