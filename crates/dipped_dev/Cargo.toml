@@ -1,0 +1,28 @@
+[package]
+name = "dipped_dev"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "dipped_dev"
+path = "src/main.rs"
+
+[dependencies]
+app_state.workspace = true
+minecraft.workspace = true
+role_eater.workspace = true
+templates.workspace = true
+
+axum.workspace = true
+deadpool-diesel.workspace = true
+dotenv.workspace = true
+dotenv_codegen.workspace = true
+futures.workspace = true
+maud.workspace = true
+tokio.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+
+glob.workspace = true
+grass.workspace = true

@@ -1,0 +1,16 @@
+[package]
+name = "templates"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+name = "templates"
+path = "src/templates.rs"
+
+[dependencies]
+maud.workspace = true
+axum.workspace = true
+
+[features]
+r6 = []

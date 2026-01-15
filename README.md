@@ -18,16 +18,35 @@ cd dipped.dev
 
 Create a .env file and populate it with the contents from .env.example
 
+Running dipped.dev
+Port is is an optional argument
 ```powershell
-cargo run -- --port 6570
+cargo run --bin dipped_dev -- --port 6570
+```
+
+Running r6.dipped.dev
+Port is is an optional argument
+```powershell
+cargo run --bin r6_dipped_dev -- --port 6571
 ```
 
 ### Building
 
 To build the repo run
 
+Building dipped.dev
 ```powershell
-cargo build --release
+cargo build --bin dipped_dev --release
+```
+
+Building r6.dipped.dev
+```powershell
+cargo build --bin r6_dipped_dev --release
+```
+
+Building Both
+```powershell
+cargo build --bins --release
 ```
 
 Then put a .env file in the same directory as the executable and then you can run the executable.

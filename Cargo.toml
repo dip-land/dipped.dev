@@ -1,11 +1,33 @@
-[package]
-name = "dipped_dev"
-version = "2.0.1"
+[workspace]
+resolver = "2"
+members = [
+    "crates/app_state",
+    "crates/dipped_dev",
+    "crates/minecraft",
+    "crates/r6_dipped_dev",
+    "crates/role_eater",
+    "crates/templates",
+    "crates/utilities",
+]
+default-members = ["crates/dipped_dev", "crates/r6_dipped_dev"]
+
+[workspace.package]
+version = "2.1.0"
+publish = false
 edition = "2024"
 
-[dependencies]
+[workspace.dependencies]
+app_state = { path = "crates/app_state" }
+dipped_dev = { path = "crates/dipped_dev" }
+minecraft = { path = "crates/minecraft" }
+r6_dipped_dev = { path = "crates/r6_dipped_dev" }
+role_eater = { path = "crates/role_eater" }
+templates = { path = "crates/templates" }
+utilities = { path = "crates/utilities" }
+
+# External crates
 axum = { version = "0.8.8", features = ["http2", "macros", "ws"] }
-chrono = { version = "0.4.42", features = ["now"] }
+chrono = { version = "0.4.43", features = ["now"] }
 deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
 diesel = { version = "2.3.5", features = ["postgres", "chrono"] }
 dotenv = "0.15.0"

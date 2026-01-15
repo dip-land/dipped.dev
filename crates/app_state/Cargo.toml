@@ -1,0 +1,16 @@
+[package]
+name = "app_state"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+name = "app_state"
+path = "src/app_state.rs"
+
+[dependencies]
+chrono.workspace = true
+diesel.workspace = true
+deadpool-diesel.workspace = true
+serde.workspace = true
+tokio.workspace = true

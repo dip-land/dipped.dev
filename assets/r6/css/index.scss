@@ -1,0 +1,88 @@
+$background-1: hsl(244, 25%, 4%);
+$background-2: hsl(244, 24%, 6%);
+$background-3: hsl(244, 23%, 8%);
+$background-4: hsl(244, 22%, 10%);
+$background-5: hsl(244, 20%, 12%);
+$background-6: hsl(244, 19%, 14%);
+$accent: #106DFF;
+$accent-transparent-75: hsla(217, 100%, 53%, 0.75);
+$accent-transparent-50: hsla(217, 100%, 53%, 0.5);
+$accent-transparent-25: hsla(217, 100%, 53%, 0.25);
+$red: hsl(10, 100%, 53%);
+$red-transparent-75: hsla(10, 100%, 53%, 0.75);
+$red-transparent-50: hsla(10, 100%, 53%, 0.5);
+$red-transparent-25: hsla(10, 100%, 53%, 0.25);
+
+$nav-background-color: hsl(244, 25%, 4%);
+$nav-border-color: hsl(244, 12%, 28%);
+$nav-height: 60px;
+
+$font-color: white;
+$font-color-muted: rgb(200, 200, 200);
+
+$terminal-background-color: hsl(244, 27%, 4%);
+$terminal-border-color: hsl(244, 12%, 28%);
+$terminal-muted: rgb(155, 155, 155);
+$terminal-prompt: #106DFF;
+$terminal-user: #106DFF;
+$terminal-path: #106DFF;
+$terminal-primary: #106DFF;
+$terminal-accent: #106DFF;
+$terminal-bg-light: hsl(244, 20%, 12%);
+
+.operator_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+    gap: 1rem;
+
+    .operator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: $background-4;
+        border-radius: 4px;
+        cursor: pointer;
+
+        img {
+            width: 100px;
+            height: 100px;
+        }
+
+        &.not_selected {
+            opacity: 0.5;
+
+            img {
+                filter: grayscale(1);
+            }
+        }
+    }
+}
+
+#selected_operator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: $background-4;
+    border-radius: 4px;
+    cursor: pointer;
+
+    span {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+}
+
+// @media (max-width: 758px) {
+
+//     .terminal-inline-group {
+//         flex-direction: column;
+//         flex: 1 !important;
+//         width: 100% !important;
+//     }
+
+//     .terminal-button.inline {
+//         width: 100% !important;
+//     }
+// }

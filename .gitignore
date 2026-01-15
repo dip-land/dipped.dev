@@ -2,5 +2,5 @@
 .vscode
 .env
 
-/assets/css/**/*.css
+/assets/*/css/**/*.css
 /assets/vault

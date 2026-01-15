@@ -1,0 +1,12 @@
+[package]
+name = "utilities"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[lib]
+name = "utilities"
+path = "src/utilities.rs"
+
+[dependencies]
+axum.workspace = true
