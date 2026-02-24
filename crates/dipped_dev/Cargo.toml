@@ -9,15 +9,10 @@ name = "dipped_dev"
 path = "src/main.rs"
 
 [dependencies]
-app_state.workspace = true
-minecraft.workspace = true
-role_eater.workspace = true
 templates.workspace = true
 
 axum.workspace = true
-deadpool-diesel.workspace = true
-dotenv.workspace = true
-dotenv_codegen.workspace = true
+dotenvy.workspace = true
 futures.workspace = true
 maud.workspace = true
 tokio.workspace = true

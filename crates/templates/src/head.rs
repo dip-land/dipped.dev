@@ -21,30 +21,30 @@ pub fn status() -> Markup {
 
 pub fn minecraft_home() -> Markup {
     html! {
-        link rel="stylesheet" type="text/css" href="/static/css/minecraft/index.css" {}
+        link rel="stylesheet" type="text/css" href="/static/css/index.css" {}
     }
 }
 
 pub fn minecraft_server() -> Markup {
     html! {
-        link rel="stylesheet" type="text/css" href="/static/css/minecraft/server.css" {}
-        script async src="/static/js/minecraft/servers.js" {}
+        link rel="stylesheet" type="text/css" href="/static/css/server.css" {}
+        script async src="/static/js/servers.js" {}
     }
 }
 
 pub fn role_eater_dashboard() -> Markup {
     html! {
-        script async src="/static/js/role_eater/dashboard.js" {}
-        link rel="stylesheet" type="text/css" href="/static/css/role_eater/dashboard.css" {}
+        script async src="/static/js/dashboard.js" {}
+        link rel="stylesheet" type="text/css" href="/static/css/dashboard.css" {}
     }
 }
 
 pub fn role_eater_guild() -> Markup {
     html! {
-        script async src="/static/js/role_eater/guild.js" {}
+        script async src="/static/js/guild.js" {}
         script async src="https://cdn.jsdelivr.net/npm/echarts@6.0.0/dist/echarts.min.js" {}
         script async src="https://cdn.jsdelivr.net/npm/chart.js" {}
-        link rel="stylesheet" type="text/css" href="/static/css/role_eater/guild/index.css" {}
+        link rel="stylesheet" type="text/css" href="/static/css/guild/index.css" {}
     }
 }
 

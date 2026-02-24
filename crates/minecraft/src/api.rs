@@ -1,4 +1,7 @@
-use app_state::{AppState, ServerData, SortingOptions};
+use crate::{
+    AppState,
+    structs::{ServerData, SortingOptions},
+};
 use axum::{
     Json, Router,
     body::{self, Body},
@@ -37,7 +40,7 @@ async fn servers_route_handler(
     State(state): State<AppState>,
     _sorting_options: Query<SortingOptions>,
 ) -> Result<Json<Vec<ServerData>>, (StatusCode, Html<String>)> {
-    let servers = state.minecraft_servers.lock().await;
+    let servers = state.servers.lock().await;
     let servers = servers.clone();
     let data: Vec<ServerData> = servers
         .iter()
@@ -65,7 +68,7 @@ async fn server_route_handler(
     State(state): State<AppState>,
     Path(identifier): Path<String>,
 ) -> Result<Json<ServerData>, (StatusCode, Markup)> {
-    let servers = state.minecraft_servers.lock().await;
+    let servers = state.servers.lock().await;
     let servers = servers.clone();
     let server = servers
         .iter()
@@ -98,7 +101,7 @@ async fn server_icon_route_handler(
     State(state): State<AppState>,
     Path(server_id): Path<String>,
 ) -> Result<Response<Body>, (StatusCode, Markup)> {
-    let servers = state.minecraft_servers.lock().await;
+    let servers = state.servers.lock().await;
     let servers = servers.clone();
     let server = servers.iter().find(|server| server.id == server_id);
     if server.is_none() {
@@ -127,7 +130,7 @@ async fn server_map_route_handler(
     State(state): State<AppState>,
     Path(server_id): Path<String>,
 ) -> Result<Json<Vec<String>>, (StatusCode, Markup)> {
-    let servers = state.minecraft_servers.lock().await;
+    let servers = state.servers.lock().await;
     let servers = servers.clone();
     let server = servers.iter().find(|server| server.id == server_id);
     if server.is_none() {
@@ -162,7 +165,7 @@ async fn server_world_route_handler(
     State(state): State<AppState>,
     Path(server_id): Path<String>,
 ) -> Result<Response<Body>, (StatusCode, Markup)> {
-    let servers = state.minecraft_servers.lock().await;
+    let servers = state.servers.lock().await;
     let servers = servers.clone();
     let server = servers.iter().find(|server| server.id == server_id);
     if server.is_none() {

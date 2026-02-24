@@ -4,20 +4,26 @@ version.workspace = true
 edition.workspace = true
 publish.workspace = true
 
-[lib]
+[[bin]]
 name = "role_eater"
-path = "src/role_eater.rs"
+path = "src/main.rs"
 
 [dependencies]
-app_state.workspace = true
 templates.workspace = true
 utilities.workspace = true
 
 axum.workspace = true
 chrono.workspace = true
-diesel.workspace = true
-deadpool-diesel.workspace = true
+dotenvy.workspace = true
+futures.workspace = true
 maud.workspace = true
 num-format.workspace = true
+sea-orm.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+tokio.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+
+glob.workspace = true
+grass.workspace = true

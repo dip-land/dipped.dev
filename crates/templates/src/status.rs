@@ -4,10 +4,17 @@ use maud::{Markup, html};
 use crate::{head, main, main_section, nav, terminal, terminal_line};
 
 pub fn build_status_page(content: Markup) -> Markup {
+    let nav = nav();
+    // if cfg!(all(feature = "secondary", not(feature = "primary"))) {
+    //     use crate::r6_nav;
+    //     nav = r6_nav();
+    //     println!("r6");
+    // }
+
     main(
         vec![head::main(), head::status()],
         vec![
-            nav(),
+            nav,
             main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("curl /"),

@@ -1,5 +1,5 @@
 # dipped.dev
-This repository contains the source code and assets required to build [dipped.dev](https://dipped.dev) and [r6.dipped.dev](https://r6.dipped.dev)
+This repository contains the source code and assets required to build [dipped.dev](https://dipped.dev) and all its subdomains
 
 
 ## Prerequisites
@@ -24,10 +24,22 @@ Port is is an optional argument
 cargo run --bin dipped_dev -- --port 6570
 ```
 
+Running minecraft.dipped.dev
+Port is is an optional argument
+```powershell
+cargo run --bin minecraft -- --port 6571
+```
+
+Running re.dipped.dev
+Port is is an optional argument
+```powershell
+cargo run --bin role_eater -- --port 6572
+```
+
 Running r6.dipped.dev
 Port is is an optional argument
 ```powershell
-cargo run --bin r6_dipped_dev -- --port 6571
+cargo run --bin rainbow_six -- --port 6573
 ```
 
 ### Building
@@ -39,12 +51,22 @@ Building dipped.dev
 cargo build --bin dipped_dev --release
 ```
 
-Building r6.dipped.dev
+Building minecraft.dipped.dev
 ```powershell
-cargo build --bin r6_dipped_dev --release
+cargo build --bin minecraft --release
 ```
 
-Building Both
+Building re.dipped.dev
+```powershell
+cargo build --bin role_eater --release
+```
+
+Building r6.dipped.dev
+```powershell
+cargo build --bin rainbow_six --release
+```
+
+Building All
 ```powershell
 cargo build --bins --release
 ```

@@ -18,7 +18,7 @@ pub struct RoleEaterAPIGuildResponse {
     pub voice_time: f64,
     pub message_count: i64,
     pub stat_total: f64,
-    pub role_count: i64,
+    pub role_count: u64,
     pub user_count: i64,
     pub users: Vec<RoleEaterAPIGuildUserHiddenSensitive>,
 }

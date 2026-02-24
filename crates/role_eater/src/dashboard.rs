@@ -1,4 +1,3 @@
-use app_state::AppState;
 use axum::{
     Router,
     extract::{Path, State},
@@ -15,7 +14,7 @@ use templates::{
 };
 use utilities::create_page;
 
-use crate::guild_handler;
+use crate::{AppState, role_eater::guild_handler};
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -119,7 +118,7 @@ async fn guild_page(
     ));
     main_group.push(terminal::group(
         vec![terminal::button(ButtonOptions {
-            href: "/role-eater/dashboard/",
+            href: "/dashboard/",
             external: false,
             content: "Back to Server List",
             button_number: None,
@@ -179,9 +178,9 @@ async fn guild_page(
     ))
 }
 
-// Takes numbers formatted with commas and converts them to be more readable eg. 1,658,512 -> 1.7M
+// Takes numbers formatted with commas and converts them to be more readable e.g. 1,658,512 -> 1.7M
 pub fn format_number(input: String) -> String {
-    let split: Vec<&str> = (input).split(",").collect();
+    let split: Vec<&str> = input.split(",").collect();
     if split.len() == 1 {
         input
     } else if split.len() == 2 {

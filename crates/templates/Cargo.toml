@@ -13,4 +13,6 @@ maud.workspace = true
 axum.workspace = true
 
 [features]
-r6 = []
+default = []
+primary = []
+secondary = []

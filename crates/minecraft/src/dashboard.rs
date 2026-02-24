@@ -1,4 +1,7 @@
-use app_state::{AppState, Server, ServerOnlineStatus, ServerStatus, SortingOptions};
+use crate::{
+    AppState,
+    structs::{Server, ServerOnlineStatus, ServerStatus, SortingOptions},
+};
 use axum::{
     Router,
     extract::{Path, Query, State},
@@ -37,7 +40,7 @@ async fn servers_page_handler(
     State(state): State<AppState>,
     _sorting_options: Query<SortingOptions>,
 ) -> Markup {
-    let servers = state.minecraft_servers.lock().await;
+    let servers = state.servers.lock().await;
     let servers = servers.clone();
     let server_templates = servers
         .iter()
@@ -52,9 +55,9 @@ async fn servers_page_handler(
             }
             terminal::terminal_card(TerminalCardOptions {
                 classlist,
-                href: &format!("/minecraft/{}", server.identifier),
-                background_src: &format!("/api/minecraft/icons/{}", server.id),
-                icon_src: &format!("/api/minecraft/icons/{}", server.id),
+                href: &format!("/{}", server.identifier),
+                background_src: &format!("/api/icons/{}", server.id),
+                icon_src: &format!("/api/icons/{}", server.id),
                 icon_alt: &server.name,
                 content: &server.name,
             })
@@ -83,7 +86,7 @@ async fn server_page_handler(
     State(state): State<AppState>,
     Path(identifier): Path<String>,
 ) -> impl IntoResponse {
-    let servers = state.minecraft_servers.lock().await;
+    let servers = state.servers.lock().await;
     let servers = servers.clone();
     let server = servers
         .iter()
@@ -132,7 +135,7 @@ async fn server_page_handler(
                 vec![
                     terminal::inline_group(vec![
                         terminal::image(
-                            format!("/api/minecraft/icons/{}", server.id).as_str(),
+                            format!("/api/icons/{}", server.id).as_str(),
                             server.name.as_str(),
                             true,
                             "width: 200px;",
@@ -159,7 +162,7 @@ async fn server_page_handler(
                                     style: terminal::ButtonStyle::Default,
                                 }),
                                 terminal::button(ButtonOptions {
-                                    href: format!("/api/minecraft/worlds/{}", server.id).as_str(),
+                                    href: format!("/api/worlds/{}", server.id).as_str(),
                                     external: true,
                                     content: "Download World File",
                                     button_number: None,

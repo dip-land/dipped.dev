@@ -1,20 +1,16 @@
-use app_state::{
-    AppState,
-    models::*,
-    schema::{guild_data, roles, user_data},
+use crate::{
+    AppState, check_db, dashboard,
+    db::{guilds::*, users::*},
+    structs::*,
 };
 use axum::{Router, http::StatusCode, routing::get};
-use diesel::prelude::*;
 use maud::Markup;
+use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder};
 use templates::{
     head, main, main_section, nav,
     status::{error_500_handler, status_404_handler},
     terminal, terminal_line,
 };
-
-pub mod api;
-pub mod dashboard;
-pub mod structs;
 
 pub fn router() -> Router<AppState> {
     Router::<AppState>::new()
@@ -45,7 +41,7 @@ pub fn generate_index() -> Markup {
                                 terminal_line::output("A stat-tracking role-creation Discord bot."),
                                 terminal::inline_group(vec![
                                     terminal::button(terminal::ButtonOptions {
-                                        href: "/role-eater/dashboard",
+                                        href: "/dashboard",
                                         external: false,
                                         content: "dashboard ",
                                         button_number: Some(1),
@@ -54,7 +50,7 @@ pub fn generate_index() -> Markup {
                                         style: terminal::ButtonStyle::Default,
                                     }),
                                     terminal::button(terminal::ButtonOptions {
-                                        href: "/role-eater",
+                                        href: "/",
                                         external: false,
                                         content: "invite bot ",
                                         button_number: Some(2),
@@ -98,36 +94,26 @@ pub fn generate_index() -> Markup {
 pub async fn guild_handler(
     state: AppState,
     guild_id: String,
-) -> Result<structs::RoleEaterAPIGuildResponse, (StatusCode, Markup)> {
-    let guild_connection = state.guild_pool.get().await.map_err(error_500_handler)?;
-    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
+) -> Result<RoleEaterAPIGuildResponse, (StatusCode, Markup)> {
+    let db = check_db(state).await.map_err(error_500_handler)?;
 
-    let guid: String = guild_id.clone();
-    let guild: GuildData = guild_connection
-        .interact(move |conn| {
-            guild_data::table
-                .filter(guild_data::dsl::guild_id.eq(guid))
-                .first(conn)
-        })
+    let guild: guild_data::Model = guild_data::Entity::find()
+        .filter(guild_data::Column::GuildId.eq(&guild_id))
+        .one(&db)
         .await
         .map_err(error_500_handler)?
-        .map_err(error_500_handler)?;
+        .unwrap();
 
-    let guid: String = guild_id.clone();
-    let users: Vec<structs::RoleEaterAPIGuildUserHiddenSensitive> = user_connection
-        .interact(move |conn| {
-            user_data::table
-                .filter(user_data::dsl::guild_id.eq(guid))
-                .filter(user_data::dsl::user_left.ne(true))
-                .order(user_data::dsl::total.desc())
-                .load(conn)
-        })
+    let users: Vec<RoleEaterAPIGuildUserHiddenSensitive> = user_data::Entity::find()
+        .filter(user_data::Column::GuildId.eq(&guild_id))
+        .filter(user_data::Column::UserLeft.eq(false))
+        .order_by_desc(user_data::Column::Total)
+        .all(&db)
         .await
-        .map_err(error_500_handler)?
         .map_err(error_500_handler)?
         .into_iter()
         .map(
-            |user: UserData| structs::RoleEaterAPIGuildUserHiddenSensitive {
+            |user: user_data::Model| RoleEaterAPIGuildUserHiddenSensitive {
                 user_id: user.user_id,
                 guild_id: user.guild_id,
                 username: user.username,
@@ -144,15 +130,10 @@ pub async fn guild_handler(
         )
         .collect();
 
-    let role_count: i64 = guild_connection
-        .interact(move |conn| {
-            roles::table
-                .filter(roles::dsl::guild_id.eq(guild_id))
-                .count()
-                .get_result(conn)
-        })
+    let role_count: u64 = roles::Entity::find()
+        .filter(roles::Column::GuildId.eq(&guild_id))
+        .count(&db)
         .await
-        .map_err(error_500_handler)?
         .map_err(error_500_handler)?;
 
     let mut total_message_count: i64 = 0;
@@ -165,7 +146,7 @@ pub async fn guild_handler(
 
     let stat_total: f64 = total_voice_time + total_message_count as f64;
 
-    Ok(structs::RoleEaterAPIGuildResponse {
+    Ok(RoleEaterAPIGuildResponse {
         guild_id: guild.guild_id,
         name: guild.name,
         icon: guild.icon,

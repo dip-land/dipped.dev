@@ -1,19 +1,11 @@
-#[macro_use]
-extern crate dotenv_codegen;
-extern crate dotenv;
-
-use app_state::{AppState, Server, ServerOnlineStatus, ServerStatus};
 use axum::{Router, ServiceExt, extract::Request, routing::get};
-use dotenv::dotenv;
-use futures::future::join_all;
+use dotenvy::{dotenv, var};
 use maud::Markup;
-use minecraft::{get_server_stats, get_servers};
-use std::{env, path::Path, sync::Arc};
+use std::{env, path::Path};
 use templates::{
     head, main as template_main, main_section, nav, status::status_404_handler, terminal,
     terminal_line,
 };
-use tokio::sync::Mutex;
 use tower::layer::Layer;
 use tower_http::{
     normalize_path::NormalizePathLayer,
@@ -25,7 +17,8 @@ async fn main() {
     dotenv().ok();
 
     let args: Vec<String> = env::args().collect();
-    let mut port = dotenv!("MAIN_WEB_PORT");
+    let port: String = var("MAIN_WEB_PORT").unwrap();
+    let mut port: &str = port.as_str();
 
     if args.len() >= 3 {
         port = args[2].as_str();
@@ -34,110 +27,33 @@ async fn main() {
     #[cfg(debug_assertions)]
     debug_fn();
 
-    let servers = join_all(get_servers().await.iter().map(|server| async {
-        let mut server_online_status = ServerOnlineStatus::Offline;
-        let mut player_count = 0;
-        if let ServerStatus::Current = server.status {
-            let server_stats = get_server_stats(server.clone().id).await;
-            player_count = server_stats.latest.players_online.unwrap();
-            server_online_status = ServerOnlineStatus::Online;
-        }
+    let shared_assets_path: &String = &var("SHARED_ASSETS_PATH").unwrap();
+    let assets_path: &String = &var("MAIN_ASSETS_PATH").unwrap();
+    let vault_path: &String = &var("VAULT_ASSETS_PATH").unwrap();
 
-        Server {
-            id: server.clone().id,
-            status: server.clone().status,
-            online: server_online_status,
-            version: server.clone().version,
-            name: server.clone().name,
-            identifier: server.clone().identifier,
-            start_date: server.clone().start_date,
-            end_date: server.clone().end_date,
-            install_link: server.clone().install_link,
-            view_pack_link: server.clone().view_pack_link,
-            players: Some(player_count),
-            path: server.clone().path,
-            world_download: server.world_download,
-            pack_download: server.pack_download,
-            map_available: server.map_available,
-        }
-    }))
-    .await;
+    let shared_assets_path: &Path = Path::new(shared_assets_path);
+    let assets_path: &Path = Path::new(assets_path);
+    let favicon_path: &std::path::PathBuf = &shared_assets_path.join("media/images/favicon.ico");
+    let vault_path: &Path = Path::new(vault_path);
 
-    let guild_manager = deadpool_diesel::postgres::Manager::new(
-        format!(
-            "postgresql://{}:{}@{}/{}?options=-csearch_path%3D{}",
-            dotenv!("PG_USER"),
-            dotenv!("PG_PASSWORD"),
-            dotenv!("PG_HOST"),
-            dotenv!("PG_DB"),
-            "guilds"
-        )
-        .as_str(),
-        deadpool_diesel::Runtime::Tokio1,
-    );
-    let guild_pool = deadpool_diesel::postgres::Pool::builder(guild_manager)
-        .build()
-        .unwrap();
+    let favicon_service: ServeFile = ServeFile::new(favicon_path);
+    let shared_asset_service: ServeDir = ServeDir::new(shared_assets_path);
+    let asset_service: ServeDir = ServeDir::new(assets_path);
+    let vault_service: ServeDir = ServeDir::new(vault_path);
 
-    let user_manager = deadpool_diesel::postgres::Manager::new(
-        format!(
-            "postgresql://{}:{}@{}/{}?options=-csearch_path%3D{}",
-            dotenv!("PG_USER"),
-            dotenv!("PG_PASSWORD"),
-            dotenv!("PG_HOST"),
-            dotenv!("PG_DB"),
-            "users"
-        )
-        .as_str(),
-        deadpool_diesel::Runtime::Tokio1,
-    );
-    let user_pool = deadpool_diesel::postgres::Pool::builder(user_manager)
-        .build()
-        .unwrap();
+    let app: tower_http::normalize_path::NormalizePath<Router> =
+        NormalizePathLayer::trim_trailing_slash().layer(
+            Router::new()
+                .route("/", get(generate_index()))
+                .nest_service("/favicon.ico", favicon_service)
+                .nest_service("/shared", shared_asset_service)
+                .nest_service("/static", asset_service)
+                .nest_service("/static/vault", vault_service)
+                .fallback(status_404_handler()),
+        );
 
-    let state = AppState {
-        minecraft_servers: Arc::new(Mutex::new(servers.clone())),
-        guild_pool,
-        user_pool,
-    };
-
-    let mut router = Router::<AppState>::new();
-    if (dotenv!("MINECRAFT_API_ENABLED") == "True") {
-        router = router.nest("/api/minecraft", minecraft::api::router());
-    }
-    if (dotenv!("MINECRAFT_ROUTES_ENABLED") == "True") {
-        router = router.nest("/minecraft", minecraft::dashboard::router(servers.clone()));
-    }
-    if (dotenv!("ROLE_EATER_API_ENABLED") == "True") {
-        router = router.nest("/api/role-eater", role_eater::api::router());
-    }
-    if (dotenv!("ROLE_EATER_ROUTES_ENABLED") == "True") {
-        router = router.nest("/role-eater", role_eater::router());
-    }
-
-    let shared_assets_path = Path::new(dotenv!("SHARED_ASSETS_PATH"));
-    let assets_path = Path::new(dotenv!("MAIN_ASSETS_PATH"));
-    let favicon_path = &shared_assets_path.join("media/images/favicon.ico");
-    let vault_path = Path::new(dotenv!("VAULT_ASSETS_PATH"));
-
-    let favicon_service = ServeFile::new(favicon_path);
-    let shared_asset_service = ServeDir::new(shared_assets_path);
-    let asset_service = ServeDir::new(assets_path);
-    let vault_service = ServeDir::new(vault_path);
-
-    let app = NormalizePathLayer::trim_trailing_slash().layer(
-        router
-            .route("/", get(generate_index()))
-            .nest_service("/favicon.ico", favicon_service)
-            .nest_service("/shared", shared_asset_service)
-            .nest_service("/static", asset_service)
-            .nest_service("/static/vault", vault_service)
-            .fallback(status_404_handler())
-            .with_state(state),
-    );
-
-    let address = format!("127.0.0.1:{}", port);
-    let listener = tokio::net::TcpListener::bind(address).await.unwrap();
+    let address: String = format!("127.0.0.1:{}", port);
+    let listener: tokio::net::TcpListener = tokio::net::TcpListener::bind(address).await.unwrap();
     println!("listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, ServiceExt::<Request>::into_make_service(app))
         .await
@@ -233,7 +149,7 @@ fn debug_fn() {
     use grass;
     use std::fs;
 
-    for entry in glob(format!("{}**/*.scss", dotenv!("SHARED_ASSETS_PATH")).as_str())
+    for entry in glob(format!("{}/**/*.scss", var("SHARED_ASSETS_PATH").unwrap()).as_str())
         .expect("Failed to read glob pattern")
     {
         if entry.is_err() {
@@ -256,7 +172,7 @@ fn debug_fn() {
         }
     }
 
-    for entry in glob(format!("{}**/*.scss", dotenv!("MAIN_ASSETS_PATH")).as_str())
+    for entry in glob(format!("{}/**/*.scss", var("MAIN_ASSETS_PATH").unwrap()).as_str())
         .expect("Failed to read glob pattern")
     {
         if entry.is_err() {

@@ -1,11 +1,3 @@
-use app_state::{
-    AppState,
-    models::*,
-    schema::{
-        activity_game_history, activity_music_history, activity_time_history, activity_user_data,
-        guild_data, user_data, voice_message_history,
-    },
-};
 use axum::{
     Json, Router,
     extract::{Path, Query, State},
@@ -13,13 +5,17 @@ use axum::{
     routing::get,
 };
 use chrono::{DateTime, Duration, Local};
-use deadpool_diesel::postgres::Object;
-use diesel::{dsl::sql, prelude::*};
 use maud::Markup;
+use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use std::cmp::Ordering;
 use templates::status::{error_500_handler, status_403_handler};
 
-use crate::{guild_handler, structs::*};
+use crate::{
+    AppState, check_db,
+    db::{guilds::*, users::*},
+    role_eater::guild_handler,
+    structs::*,
+};
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -54,7 +50,7 @@ async fn servers_route_handler(
     State(state): State<AppState>,
     headers: header::HeaderMap,
 ) -> Result<Json<Vec<RoleEaterAPIServersResponse>>, (StatusCode, Markup)> {
-    let guild_connection = state.guild_pool.get().await.map_err(error_500_handler)?;
+    let db = check_db(state).await.map_err(error_500_handler)?;
 
     let mut user_guilds: Vec<String> = Vec::new();
     if headers.get("guilds").is_some_and(|value| value != "null") {
@@ -63,11 +59,11 @@ async fn servers_route_handler(
                 .unwrap()
     }
 
-    let available_guilds: Vec<GuildData> = guild_connection
-        .interact(|conn| guild_data::table.load(conn))
+    let available_guilds: Vec<guild_data::Model> = guild_data::Entity::find()
+        .all(&db)
         .await
-        .map_err(error_500_handler)?
         .map_err(error_500_handler)?;
+
     let mut guilds: Vec<RoleEaterAPIServersResponse> = Vec::new();
 
     for guild in available_guilds {
@@ -99,89 +95,75 @@ async fn guild_activity_route_handler(
     State(state): State<AppState>,
     Path(guild_id): Path<String>,
 ) -> Result<Json<RoleEaterAPIGuildActivityResponse>, (StatusCode, Markup)> {
-    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
+    let db = check_db(state).await.map_err(error_500_handler)?;
 
-    let guid = guild_id.clone();
-    let users: Vec<UserData> = user_connection
-        .interact(move |conn| {
-            user_data::table
-                .filter(user_data::dsl::guild_id.eq(guid))
-                .filter(user_data::dsl::user_left.ne(true))
-                .load(conn)
-        })
+    let forty_five_days_ago = (Local::now() - Duration::days(45))
+        .with_timezone(&Local)
+        .date_naive()
+        .and_hms_opt(0, 0, 0)
+        .unwrap();
+
+    let users: Vec<user_data::Model> = user_data::Entity::find()
+        .filter(user_data::Column::GuildId.eq(&guild_id))
+        .filter(user_data::Column::UserLeft.eq(false))
+        .all(&db)
         .await
-        .map_err(error_500_handler)?
         .map_err(error_500_handler)?;
 
-    let guid = guild_id.clone();
-    let voice_message_history: Vec<RoleEaterAPIVoiceMessageHistory> = user_connection
-        .interact(move |conn| {
-            voice_message_history::table
-                .filter(voice_message_history::dsl::guild_id.eq(guid))
-                .filter(voice_message_history::dsl::date.ge(sql("now() - interval '46 day'")))
-                .load(conn)
-        })
-        .await
-        .map_err(error_500_handler)?
-        .map_err(error_500_handler)?
-        .into_iter()
-        .map(
-            |history: VoiceMessageHistory| RoleEaterAPIVoiceMessageHistory {
-                user_id: history.user_id,
-                guild_id: history.guild_id,
-                date: history.date.format(DATE_FORMAT).to_string(),
-                message_count: history.message_count,
-                voice_time: history.voice_time,
-            },
-        )
-        .collect();
-
-    let mut parsed_voice_message_history: Vec<&RoleEaterAPIVoiceMessageHistory> = Vec::new();
-    let mut parsed_activity_time_history: Vec<RoleEaterAPIActivityTimeHistory> = Vec::new();
-    let mut data: Vec<RoleEaterAPIGuildActivityData> = Vec::new();
-    let now: DateTime<Local> = Local::now();
-    let past = now - Duration::days(45);
-    for user in users {
-        voice_message_history
-            .iter()
-            .filter(|v| v.user_id == user.user_id)
-            .for_each(|value| parsed_voice_message_history.push(value));
-
-        let activity_time_history: Vec<RoleEaterAPIActivityTimeHistory> = user_connection
-            .interact(move |conn| {
-                activity_time_history::table
-                    .filter(activity_time_history::dsl::user_id.eq(&user.user_id))
-                    .filter(activity_time_history::dsl::date.ge(sql("now() - interval '46 day'")))
-                    .load(conn)
-            })
+    let voice_message_history: Vec<RoleEaterAPIVoiceMessageHistory> =
+        voice_message_history::Entity::find()
+            .filter(voice_message_history::Column::GuildId.eq(&guild_id))
+            .filter(voice_message_history::Column::Date.gte(forty_five_days_ago.clone()))
+            .all(&db)
             .await
-            .map_err(error_500_handler)?
             .map_err(error_500_handler)?
             .into_iter()
             .map(
-                |history: ActivityTimeHistory| RoleEaterAPIActivityTimeHistory {
+                |history: voice_message_history::Model| RoleEaterAPIVoiceMessageHistory {
                     user_id: history.user_id,
+                    guild_id: history.guild_id,
                     date: history.date.format(DATE_FORMAT).to_string(),
-                    game_time: history.game_time,
-                    game_count: history.game_count,
-                    music_time: history.music_time,
-                    music_count: history.music_count,
+                    message_count: history.message_count,
+                    voice_time: history.voice_time,
                 },
             )
             .collect();
 
-        for history in activity_time_history {
-            parsed_activity_time_history.push(history);
-        }
+    let mut full_activity_time_history: Vec<RoleEaterAPIActivityTimeHistory> = Vec::new();
+    let mut data: Vec<RoleEaterAPIGuildActivityData> = Vec::new();
+    let now: DateTime<Local> = Local::now();
+    let past = now - Duration::days(45);
+    for user in users {
+        let activity_time_history: Vec<RoleEaterAPIActivityTimeHistory> =
+            activity_time_history::Entity::find()
+                .filter(activity_time_history::Column::UserId.eq(&user.user_id))
+                .filter(activity_time_history::Column::Date.gte(forty_five_days_ago.clone()))
+                .all(&db)
+                .await
+                .map_err(error_500_handler)?
+                .into_iter()
+                .map(
+                    |history: activity_time_history::Model| RoleEaterAPIActivityTimeHistory {
+                        user_id: history.user_id,
+                        date: history.date.format(DATE_FORMAT).to_string(),
+                        game_time: history.game_time,
+                        game_count: history.game_count,
+                        music_time: history.music_time,
+                        music_count: history.music_count,
+                    },
+                )
+                .collect();
+
+        full_activity_time_history = [full_activity_time_history, activity_time_history].concat();
     }
 
     let mut date_step = past;
     while date_step <= now {
-        let filtered_voice_message_history = parsed_voice_message_history
+        let filtered_voice_message_history = voice_message_history
             .clone()
             .into_iter()
             .filter(|v| v.date == date_step.format(DATE_FORMAT).to_string());
-        let filtered_activity_time_history = parsed_activity_time_history
+        let filtered_activity_time_history = full_activity_time_history
             .clone()
             .into_iter()
             .filter(|v| v.date == date_step.format(DATE_FORMAT).to_string());
@@ -221,20 +203,15 @@ async fn guild_activity_route_handler(
 }
 
 async fn get_guild_users_positions(
-    connection: Object,
+    connection: DatabaseConnection,
     guild_id: String,
 ) -> Result<RoleEaterAPIGuildPositionsResponse, (StatusCode, Markup)> {
-    let guid = guild_id.clone();
-    let mut users: Vec<UserData> = connection
-        .interact(move |conn| {
-            user_data::table
-                .filter(user_data::dsl::guild_id.eq(guid))
-                .filter(user_data::dsl::user_left.ne(true))
-                .order(user_data::dsl::total.desc())
-                .load(conn)
-        })
+    let mut users: Vec<user_data::Model> = user_data::Entity::find()
+        .filter(user_data::Column::GuildId.eq(&guild_id))
+        .filter(user_data::Column::UserLeft.eq(false))
+        .order_by_desc(user_data::Column::Total)
+        .all(&connection)
         .await
-        .map_err(error_500_handler)?
         .map_err(error_500_handler)?;
 
     let total: Vec<String> = users.clone().into_iter().map(|user| user.user_id).collect();
@@ -257,9 +234,9 @@ async fn guild_positions_route_handler(
     State(state): State<AppState>,
     Path(guild_id): Path<String>,
 ) -> Result<Json<RoleEaterAPIGuildPositionsResponse>, (StatusCode, Markup)> {
-    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
+    let db = check_db(state).await.map_err(error_500_handler)?;
 
-    let data = get_guild_users_positions(user_connection, guild_id.clone()).await?;
+    let data = get_guild_users_positions(db, guild_id.clone()).await?;
 
     Ok(Json(RoleEaterAPIGuildPositionsResponse {
         guild_id,
@@ -273,35 +250,24 @@ async fn guild_user_route_handler(
     State(state): State<AppState>,
     Path((guild_id, user_id)): Path<(String, String)>,
 ) -> Result<Json<RoleEaterAPIGuildUserResponse>, (StatusCode, Markup)> {
-    let guild_connection = state.guild_pool.get().await.map_err(error_500_handler)?;
-    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
+    let db = check_db(state).await.map_err(error_500_handler)?;
 
-    let guid = guild_id.clone();
-    let guild: GuildData = guild_connection
-        .interact(move |conn| {
-            guild_data::table
-                .filter(guild_data::dsl::guild_id.eq(guid))
-                .first(conn)
-        })
+    let guild: guild_data::Model = guild_data::Entity::find()
+        .filter(guild_data::Column::GuildId.eq(&guild_id))
+        .one(&db)
         .await
         .map_err(error_500_handler)?
-        .map_err(error_500_handler)?;
+        .unwrap();
 
-    let guid = guild_id.clone();
-    let uid = user_id.clone();
-    let user: UserData = user_connection
-        .interact(move |conn| {
-            user_data::table
-                .filter(user_data::dsl::guild_id.eq(guid))
-                .filter(user_data::dsl::user_id.eq(uid))
-                .order(user_data::dsl::total.desc())
-                .first(conn)
-        })
+    let user: user_data::Model = user_data::Entity::find()
+        .filter(user_data::Column::GuildId.eq(&guild_id))
+        .filter(user_data::Column::UserId.eq(&user_id))
+        .one(&db)
         .await
         .map_err(error_500_handler)?
-        .map_err(error_500_handler)?;
+        .unwrap();
 
-    let positions = get_guild_users_positions(user_connection, guild_id.clone()).await?;
+    let positions = get_guild_users_positions(db, guild_id.clone()).await?;
 
     let total_position = positions.total.iter().position(|x| x == &user_id).unwrap() + 1;
     let voice_position = positions.voice.iter().position(|x| x == &user_id).unwrap() + 1;
@@ -311,6 +277,23 @@ async fn guild_user_route_handler(
         .position(|x| x == &user_id)
         .unwrap()
         + 1;
+
+    let mut join_date = "".to_string();
+    let mut creation_date = "".to_string();
+    if user.join_date.is_some() {
+        join_date = user
+            .join_date
+            .unwrap()
+            .format(DATE_FORMAT_ISO8601_NO_MS)
+            .to_string();
+    }
+    if user.creation_date.is_some() {
+        creation_date = user
+            .creation_date
+            .unwrap()
+            .format(DATE_FORMAT_ISO8601_NO_MS)
+            .to_string();
+    }
 
     Ok(Json(RoleEaterAPIGuildUserResponse {
         guild_id,
@@ -322,11 +305,8 @@ async fn guild_user_route_handler(
         nickname: user.nickname,
         avatar: user.avatar,
         banner: user.banner,
-        join_date: user.join_date.format(DATE_FORMAT_ISO8601_NO_MS).to_string(),
-        creation_date: user
-            .creation_date
-            .format(DATE_FORMAT_ISO8601_NO_MS)
-            .to_string(),
+        join_date,
+        creation_date,
         total: user.total,
         total_position,
         message_count: user.message_count,
@@ -340,60 +320,56 @@ async fn guild_user_activity_route_handler(
     State(state): State<AppState>,
     Path((guild_id, user_id)): Path<(String, String)>,
 ) -> Result<Json<RoleEaterAPIGuildUserActivityResponse>, (StatusCode, Markup)> {
-    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
+    let db = check_db(state).await.map_err(error_500_handler)?;
+    let forty_five_days_ago = (Local::now() - Duration::days(45))
+        .with_timezone(&Local)
+        .date_naive()
+        .and_hms_opt(0, 0, 0)
+        .unwrap();
 
-    let guid = guild_id.clone();
-    let uid = user_id.clone();
-    let voice_message_history: Vec<RoleEaterAPIVoiceMessageHistory> = user_connection
-        .interact(move |conn| {
-            voice_message_history::table
-                .filter(voice_message_history::dsl::guild_id.eq(guid))
-                .filter(voice_message_history::dsl::user_id.eq(uid))
-                .filter(voice_message_history::dsl::date.ge(sql("now() - interval '46 day'")))
-                .load(conn)
-        })
-        .await
-        .map_err(error_500_handler)?
-        .map_err(error_500_handler)?
-        .into_iter()
-        .map(
-            |history: VoiceMessageHistory| RoleEaterAPIVoiceMessageHistory {
-                user_id: history.user_id,
-                guild_id: history.guild_id,
-                date: history.date.format(DATE_FORMAT).to_string(),
-                message_count: history.message_count,
-                voice_time: history.voice_time,
-            },
-        )
-        .collect();
+    let voice_message_history: Vec<RoleEaterAPIVoiceMessageHistory> =
+        voice_message_history::Entity::find()
+            .filter(voice_message_history::Column::GuildId.eq(&guild_id))
+            .filter(voice_message_history::Column::UserId.eq(&user_id))
+            .filter(voice_message_history::Column::Date.gte(forty_five_days_ago.clone()))
+            .all(&db)
+            .await
+            .map_err(error_500_handler)?
+            .into_iter()
+            .map(
+                |history: voice_message_history::Model| RoleEaterAPIVoiceMessageHistory {
+                    user_id: history.user_id,
+                    guild_id: history.guild_id,
+                    date: history.date.format(DATE_FORMAT).to_string(),
+                    message_count: history.message_count,
+                    voice_time: history.voice_time,
+                },
+            )
+            .collect();
 
     let mut data: Vec<RoleEaterAPIGuildActivityData> = Vec::new();
     let now: DateTime<Local> = Local::now();
     let past = now - Duration::days(45);
 
-    let uid = user_id.clone();
-    let activity_time_history: Vec<RoleEaterAPIActivityTimeHistory> = user_connection
-        .interact(move |conn| {
-            activity_time_history::table
-                .filter(activity_time_history::dsl::user_id.eq(uid))
-                .filter(activity_time_history::dsl::date.ge(sql("now() - interval '46 day'")))
-                .load(conn)
-        })
-        .await
-        .map_err(error_500_handler)?
-        .map_err(error_500_handler)?
-        .into_iter()
-        .map(
-            |history: ActivityTimeHistory| RoleEaterAPIActivityTimeHistory {
-                user_id: history.user_id,
-                date: history.date.format(DATE_FORMAT).to_string(),
-                game_time: history.game_time,
-                game_count: history.game_count,
-                music_time: history.music_time,
-                music_count: history.music_count,
-            },
-        )
-        .collect();
+    let activity_time_history: Vec<RoleEaterAPIActivityTimeHistory> =
+        activity_time_history::Entity::find()
+            .filter(activity_time_history::Column::UserId.eq(&user_id))
+            .filter(activity_time_history::Column::Date.gte(forty_five_days_ago.clone()))
+            .all(&db)
+            .await
+            .map_err(error_500_handler)?
+            .into_iter()
+            .map(
+                |history: activity_time_history::Model| RoleEaterAPIActivityTimeHistory {
+                    user_id: history.user_id,
+                    date: history.date.format(DATE_FORMAT).to_string(),
+                    game_time: history.game_time,
+                    game_count: history.game_count,
+                    music_time: history.music_time,
+                    music_count: history.music_count,
+                },
+            )
+            .collect();
 
     let mut date_step = past;
     while date_step <= now {
@@ -448,36 +424,28 @@ async fn guild_user_activity_latest_route_handler(
     State(state): State<AppState>,
     Path((guild_id, user_id)): Path<(String, String)>,
 ) -> Result<Json<RoleEaterAPIGuildUserActivityLatestResponse>, (StatusCode, Markup)> {
-    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
+    let db = check_db(state).await.map_err(error_500_handler)?;
 
-    let uid = user_id.clone();
-    let user_data: ActivityUserData = user_connection
-        .interact(move |conn| {
-            activity_user_data::table
-                .filter(activity_user_data::dsl::user_id.eq(uid))
-                .first(conn)
-        })
+    let user: activity_user_data::Model = activity_user_data::Entity::find()
+        .filter(activity_user_data::Column::UserId.eq(&user_id))
+        .one(&db)
         .await
         .map_err(error_500_handler)?
-        .map_err(error_500_handler)?;
+        .unwrap();
 
     let mut game_start_time: Option<String> = None;
-    if user_data.current_game_start_time.is_some() {
+    if let Some(current_game_start_time) = user.current_game_start_time {
         game_start_time = Some(
-            user_data
-                .current_game_start_time
-                .unwrap()
+            current_game_start_time
                 .format(DATE_FORMAT_ISO8601_NO_MS)
                 .to_string(),
         );
     }
 
     let mut song_start_time: Option<String> = None;
-    if user_data.current_game_start_time.is_some() {
+    if let Some(current_song_start_time) = user.current_song_start_time {
         song_start_time = Some(
-            user_data
-                .current_song_start_time
-                .unwrap()
+            current_song_start_time
                 .format(DATE_FORMAT_ISO8601_NO_MS)
                 .to_string(),
         );
@@ -486,15 +454,15 @@ async fn guild_user_activity_latest_route_handler(
     Ok(Json(RoleEaterAPIGuildUserActivityLatestResponse {
         guild_id,
         user_id,
-        last_played_game_title: user_data.last_played_game_title,
-        last_played_game_time: user_data.last_played_game_time,
-        last_played_song_title: user_data.last_played_song_title,
-        last_played_song_time: user_data.last_played_song_time,
-        last_played_song_artist: user_data.last_played_song_artist,
-        current_game_title: user_data.current_game_title,
+        last_played_game_title: user.last_played_game_title,
+        last_played_game_time: user.last_played_game_time,
+        last_played_song_title: user.last_played_song_title,
+        last_played_song_time: user.last_played_song_time,
+        last_played_song_artist: user.last_played_song_artist,
+        current_game_title: user.current_game_title,
         current_game_start_time: game_start_time,
-        current_song_title: user_data.current_song_title,
-        current_song_artist: user_data.current_song_artist,
+        current_song_title: user.current_song_title,
+        current_song_artist: user.current_song_artist,
         current_song_start_time: song_start_time,
     }))
 }
@@ -504,38 +472,35 @@ async fn guild_user_activity_game_route_handler(
     Path((guild_id, user_id)): Path<(String, String)>,
     query: Query<GuildUserActivityExtraParams>,
 ) -> Result<Json<RoleEaterAPIGuildUserActivityGameResponse>, (StatusCode, Markup)> {
-    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
+    let db = check_db(state).await.map_err(error_500_handler)?;
 
-    let uid = user_id.clone();
-    let user_data: Vec<RoleEaterAPIGuildUserActivityGameData> = user_connection
-        .interact(move |conn| match query.0.limit.is_some() {
-            true => activity_game_history::table
-                .filter(activity_game_history::dsl::user_id.eq(uid))
-                .order(activity_game_history::dsl::time_played.desc())
-                .limit(query.0.limit.unwrap() as i64)
-                .load(conn),
-            false => activity_game_history::table
-                .filter(activity_game_history::dsl::user_id.eq(uid))
-                .order(activity_game_history::dsl::time_played.desc())
-                .load(conn),
-        })
-        .await
-        .map_err(error_500_handler)?
-        .map_err(error_500_handler)?
-        .into_iter()
-        .map(
-            |activity: ActivityGameHistory| RoleEaterAPIGuildUserActivityGameData {
-                game_title: activity.game_title,
-                play_count: activity.play_count,
-                time_played: activity.time_played,
-            },
-        )
-        .collect();
+    let user: Vec<RoleEaterAPIGuildUserActivityGameData> = match query.0.limit.is_some() {
+        true => activity_game_history::Entity::find()
+            .filter(activity_game_history::Column::UserId.eq(&user_id))
+            .order_by_desc(activity_game_history::Column::TimePlayed)
+            .limit(query.0.limit.unwrap() as u64)
+            .all(&db),
+        false => activity_game_history::Entity::find()
+            .filter(activity_game_history::Column::UserId.eq(&user_id))
+            .order_by_desc(activity_game_history::Column::TimePlayed)
+            .all(&db),
+    }
+    .await
+    .map_err(error_500_handler)?
+    .into_iter()
+    .map(
+        |activity: activity_game_history::Model| RoleEaterAPIGuildUserActivityGameData {
+            game_title: activity.game_title,
+            play_count: activity.play_count,
+            time_played: activity.time_played,
+        },
+    )
+    .collect();
 
     Ok(Json(RoleEaterAPIGuildUserActivityGameResponse {
         guild_id,
         user_id,
-        data: user_data,
+        data: user,
     }))
 }
 
@@ -544,39 +509,36 @@ async fn guild_user_activity_music_route_handler(
     Path((guild_id, user_id)): Path<(String, String)>,
     query: Query<GuildUserActivityExtraParams>,
 ) -> Result<Json<RoleEaterAPIGuildUserActivityMusicResponse>, (StatusCode, Markup)> {
-    let user_connection = state.user_pool.get().await.map_err(error_500_handler)?;
+    let db = check_db(state).await.map_err(error_500_handler)?;
 
-    let uid = user_id.clone();
-    let user_data: Vec<RoleEaterAPIGuildUserActivityMusicData> = user_connection
-        .interact(move |conn| match query.0.limit.is_some() {
-            true => activity_music_history::table
-                .filter(activity_music_history::dsl::user_id.eq(uid))
-                .order(activity_music_history::dsl::time_played.desc())
-                .limit(query.0.limit.unwrap() as i64)
-                .load(conn),
-            false => activity_music_history::table
-                .filter(activity_music_history::dsl::user_id.eq(uid))
-                .order(activity_music_history::dsl::time_played.desc())
-                .load(conn),
-        })
-        .await
-        .map_err(error_500_handler)?
-        .map_err(error_500_handler)?
-        .into_iter()
-        .map(
-            |activity: ActivityMusicHistory| RoleEaterAPIGuildUserActivityMusicData {
-                song_title: activity.song_title,
-                song_artist: activity.song_artist,
-                play_count: activity.play_count,
-                time_played: activity.time_played,
-            },
-        )
-        .collect();
+    let user: Vec<RoleEaterAPIGuildUserActivityMusicData> = match query.0.limit.is_some() {
+        true => activity_music_history::Entity::find()
+            .filter(activity_music_history::Column::UserId.eq(&user_id))
+            .order_by_desc(activity_music_history::Column::TimePlayed)
+            .limit(query.0.limit.unwrap() as u64)
+            .all(&db),
+        false => activity_music_history::Entity::find()
+            .filter(activity_music_history::Column::UserId.eq(&user_id))
+            .order_by_desc(activity_music_history::Column::TimePlayed)
+            .all(&db),
+    }
+    .await
+    .map_err(error_500_handler)?
+    .into_iter()
+    .map(
+        |activity: activity_music_history::Model| RoleEaterAPIGuildUserActivityMusicData {
+            song_title: activity.song_title,
+            song_artist: activity.song_artist,
+            play_count: activity.play_count,
+            time_played: activity.time_played,
+        },
+    )
+    .collect();
 
     Ok(Json(RoleEaterAPIGuildUserActivityMusicResponse {
         guild_id,
         user_id,
-        data: user_data,
+        data: user,
     }))
 }
 

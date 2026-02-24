@@ -1,0 +1,27 @@
+[package]
+name = "rainbow_six"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "rainbow_six"
+path = "src/main.rs"
+
+[features]
+default = ["templates/secondary"]
+
+[dependencies]
+templates = { path = "../templates", version = "*", features = ["secondary"], optional = true }
+
+axum.workspace = true
+deadpool-diesel.workspace = true
+dotenvy.workspace = true
+futures.workspace = true
+maud.workspace = true
+tokio.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+
+glob.workspace = true
+grass.workspace = true
