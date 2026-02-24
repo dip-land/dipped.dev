@@ -9,7 +9,7 @@ name = "minecraft"
 path = "src/main.rs"
 
 [dependencies]
-templates = { path = "../templates", version = "*", features = ["primary"] }
+templates.workspace = true
 
 axum.workspace = true
 chrono.workspace = true

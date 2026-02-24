@@ -23,8 +23,6 @@ utilities = { path = "crates/utilities" }
 # External crates
 axum = { version = "0.8.8", features = ["http2", "macros", "ws"] }
 chrono = { version = "0.4.43", features = ["now"] }
-deadpool-diesel = { version = "0.6.1", features = ["postgres"] }
-diesel = { version = "2.3.6", features = ["postgres", "chrono"] }
 dotenvy = "0.15.7"
 futures = "0.3.32"
 glob = "0.3.3"

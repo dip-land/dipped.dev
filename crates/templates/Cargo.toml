@@ -11,8 +11,3 @@ path = "src/templates.rs"
 [dependencies]
 maud.workspace = true
 axum.workspace = true
-
-[features]
-default = []
-primary = []
-secondary = []

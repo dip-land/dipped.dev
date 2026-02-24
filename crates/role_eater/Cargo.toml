@@ -15,7 +15,6 @@ utilities.workspace = true
 axum.workspace = true
 chrono.workspace = true
 dotenvy.workspace = true
-futures.workspace = true
 maud.workspace = true
 num-format.workspace = true
 sea-orm.workspace = true
