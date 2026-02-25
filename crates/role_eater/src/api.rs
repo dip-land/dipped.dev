@@ -8,6 +8,7 @@ use chrono::{DateTime, Duration, Local};
 use maud::Markup;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter, QueryOrder, QuerySelect};
 use std::cmp::Ordering;
+use templates::default_nav;
 use templates::status::{error_500_handler, status_403_handler};
 
 use crate::{
@@ -40,7 +41,7 @@ pub fn router() -> Router<AppState> {
             "/{guild_id}/{user_id}/activity/music",
             get(guild_user_activity_music_route_handler),
         )
-        .fallback(status_403_handler())
+        .fallback(status_403_handler(default_nav()))
 }
 
 const DATE_FORMAT: &str = "%a %b %d %Y";
@@ -113,7 +114,7 @@ async fn guild_activity_route_handler(
     let voice_message_history: Vec<RoleEaterAPIVoiceMessageHistory> =
         voice_message_history::Entity::find()
             .filter(voice_message_history::Column::GuildId.eq(&guild_id))
-            .filter(voice_message_history::Column::Date.gte(forty_five_days_ago.clone()))
+            .filter(voice_message_history::Column::Date.gte(forty_five_days_ago))
             .all(&db)
             .await
             .map_err(error_500_handler)?
@@ -137,7 +138,7 @@ async fn guild_activity_route_handler(
         let activity_time_history: Vec<RoleEaterAPIActivityTimeHistory> =
             activity_time_history::Entity::find()
                 .filter(activity_time_history::Column::UserId.eq(&user.user_id))
-                .filter(activity_time_history::Column::Date.gte(forty_five_days_ago.clone()))
+                .filter(activity_time_history::Column::Date.gte(forty_five_days_ago))
                 .all(&db)
                 .await
                 .map_err(error_500_handler)?
@@ -280,19 +281,11 @@ async fn guild_user_route_handler(
 
     let mut join_date = "".to_string();
     let mut creation_date = "".to_string();
-    if user.join_date.is_some() {
-        join_date = user
-            .join_date
-            .unwrap()
-            .format(DATE_FORMAT_ISO8601_NO_MS)
-            .to_string();
+    if let Some(date) = user.join_date {
+        join_date = date.format(DATE_FORMAT_ISO8601_NO_MS).to_string();
     }
-    if user.creation_date.is_some() {
-        creation_date = user
-            .creation_date
-            .unwrap()
-            .format(DATE_FORMAT_ISO8601_NO_MS)
-            .to_string();
+    if let Some(date) = user.creation_date {
+        creation_date = date.format(DATE_FORMAT_ISO8601_NO_MS).to_string();
     }
 
     Ok(Json(RoleEaterAPIGuildUserResponse {
@@ -331,7 +324,7 @@ async fn guild_user_activity_route_handler(
         voice_message_history::Entity::find()
             .filter(voice_message_history::Column::GuildId.eq(&guild_id))
             .filter(voice_message_history::Column::UserId.eq(&user_id))
-            .filter(voice_message_history::Column::Date.gte(forty_five_days_ago.clone()))
+            .filter(voice_message_history::Column::Date.gte(forty_five_days_ago))
             .all(&db)
             .await
             .map_err(error_500_handler)?
@@ -354,7 +347,7 @@ async fn guild_user_activity_route_handler(
     let activity_time_history: Vec<RoleEaterAPIActivityTimeHistory> =
         activity_time_history::Entity::find()
             .filter(activity_time_history::Column::UserId.eq(&user_id))
-            .filter(activity_time_history::Column::Date.gte(forty_five_days_ago.clone()))
+            .filter(activity_time_history::Column::Date.gte(forty_five_days_ago))
             .all(&db)
             .await
             .map_err(error_500_handler)?

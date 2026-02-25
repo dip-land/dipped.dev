@@ -1,16 +1,9 @@
 use axum::http::StatusCode;
 use maud::{Markup, html};
 
-use crate::{head, main, main_section, nav, terminal, terminal_line};
+use crate::{default_nav, head, main, main_section, terminal, terminal_line};
 
-pub fn build_status_page(content: Markup) -> Markup {
-    let nav = nav();
-    // if cfg!(all(feature = "secondary", not(feature = "primary"))) {
-    //     use crate::r6_nav;
-    //     nav = r6_nav();
-    //     println!("r6");
-    // }
-
+pub fn build_status_page(nav: Markup, content: Markup) -> Markup {
     main(
         vec![head::main(), head::status()],
         vec![
@@ -55,13 +48,16 @@ pub fn build_status_page(content: Markup) -> Markup {
     )
 }
 
-pub fn status_403_handler() -> (StatusCode, Markup) {
+pub fn status_403_handler(nav: Markup) -> (StatusCode, Markup) {
     (
         StatusCode::FORBIDDEN,
-        build_status_page(html! {
-            h1 class="status_text" { "403" }
-            (terminal_line::error("Error 403: Request Forbidden"))
-        }),
+        build_status_page(
+            nav,
+            html! {
+                h1 class="status_text" { "403" }
+                (terminal_line::error("Error 403: Request Forbidden"))
+            },
+        ),
     )
 }
 
@@ -70,16 +66,19 @@ where
     E: std::error::Error,
 {
     eprintln!("{:?}", err.to_string());
-    status_403_handler()
+    status_403_handler(default_nav())
 }
 
-pub fn status_404_handler() -> (StatusCode, Markup) {
+pub fn status_404_handler(nav: Markup) -> (StatusCode, Markup) {
     (
         StatusCode::FORBIDDEN,
-        build_status_page(html! {
-            h1 class="status_text" { "404" }
-            (terminal_line::error("Error 404: Not Found"))
-        }),
+        build_status_page(
+            nav,
+            html! {
+                h1 class="status_text" { "404" }
+                (terminal_line::error("Error 404: Not Found"))
+            },
+        ),
     )
 }
 
@@ -88,16 +87,19 @@ where
     E: std::error::Error,
 {
     eprintln!("{:?}", err.to_string());
-    status_404_handler()
+    status_404_handler(default_nav())
 }
 
-pub fn status_500_handler() -> (StatusCode, Markup) {
+pub fn status_500_handler(nav: Markup) -> (StatusCode, Markup) {
     (
         StatusCode::FORBIDDEN,
-        build_status_page(html! {
-            h1 class="status_text" { "500" }
-            (terminal_line::error("Error 500: Internal Server Error"))
-        }),
+        build_status_page(
+            nav,
+            html! {
+                h1 class="status_text" { "500" }
+                (terminal_line::error("Error 500: Internal Server Error"))
+            },
+        ),
     )
 }
 
@@ -106,5 +108,5 @@ where
     E: std::error::Error,
 {
     eprintln!("{:?}", err.to_string());
-    status_500_handler()
+    status_500_handler(default_nav())
 }

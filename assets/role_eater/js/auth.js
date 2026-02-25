@@ -18,8 +18,18 @@ window.addEventListener('load', async () => {
         loginButtons = document.getElementsByClassName('login');
         const discordOAuth = 'https://discord.com/oauth2/authorize?client_id=1169815792142000228&response_type=token&redirect_uri=';
         const scopes = ['identify', 'guilds'];
-        for (const origin of ['http://localhost:8011', 'https://dipped.dev', 'http://localhost:8010', 'https://dev.dipped.dev', 'http://localhost:6570']) {
-            if (origin !== window.location.origin) continue;
+        for (const origin of [
+            'http://localhost:6750',
+            'https://dipped.dev',
+            'https://www.dipped.dev',
+            'http://localhost:6751',
+            'https://minecraft.dipped.dev',
+            'http://localhost:6752',
+            'https://re.dipped.dev',
+            'http://localhost:8011',
+            'https://old.dipped.dev',
+        ]) {
+            // if (origin !== window.location.origin) continue;
             for (const btn of loginButtons) {
                 btn.setAttribute('href', `${discordOAuth}${encodeURIComponent(origin)}&scope=${scopes.join('+')}`);
                 btn.setAttribute('onclick', `window.open('${discordOAuth}${encodeURIComponent(origin)}&scope=${scopes.join('+')}','popup','width=500,height=720'); return false;`);
@@ -46,25 +56,27 @@ window.addEventListener('load', async () => {
         shouldReload = 1;
     }
     if (shouldReload === 1) location.reload();
-    if (me.id) {
-        const container = document.getElementById('user');
-        document.getElementById('user_nav_avatar').src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.gif?size=32`;
-        document.getElementById('user_nav_avatar').onerror = (e) => (e.target.src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.webp?size=32`);
-        document.getElementById('username').innerText = me.global_name;
-        container.addEventListener('click', () => {
-            document.getElementById('nav_popout').classList.toggle('hidden');
-            document.getElementById('caret').classList.toggle('rotated');
-        });
+    setTimeout(() => {
+        if (me.id) {
+            const container = document.getElementById('user');
+            document.getElementById('user_nav_avatar').src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.gif?size=32`;
+            document.getElementById('user_nav_avatar').onerror = (e) => (e.target.src = `https://cdn.discordapp.com/avatars/${me.id}/${me.avatar}.webp?size=32`);
+            document.getElementById('username').innerText = me.global_name;
+            container.addEventListener('click', () => {
+                document.getElementById('nav_popout').classList.toggle('hidden');
+                document.getElementById('caret').classList.toggle('rotated');
+            });
 
-        container.classList.remove('hidden');
-        for (const btn of loginButtons) {
-            btn.remove();
+            container.classList.remove('hidden');
+            for (const btn of loginButtons) {
+                btn.remove();
+            }
+            document.getElementById('logout').addEventListener('click', async () => {
+                window.localStorage.clear();
+                window.location.reload();
+            });
         }
-        document.getElementById('logout').addEventListener('click', async () => {
-            window.localStorage.clear();
-            window.location.reload();
-        });
-    }
+    }, 100);
 });
 
 window.addEventListener('message', (event) => {

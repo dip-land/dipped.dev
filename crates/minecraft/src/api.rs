@@ -13,10 +13,10 @@ use axum::{
 use maud::Markup;
 use std::fs::read_dir;
 use std::path::Path as std_path;
+use templates::default_nav;
 use templates::status::{error_404_handler, status_403_handler, status_404_handler};
 use tokio::fs::File;
 use tokio_util::io::ReaderStream;
-
 // use crate::{
 //     McssServer, McssServerBackupHistory, McssServerBackupTemplate, McssServerBackups,
 //     McssServerConfig, McssServerStats, McssServerStatsLatest, McssServerTaskJob,
@@ -33,7 +33,7 @@ pub fn router() -> Router<AppState> {
         .route("/icons/{server}", get(server_icon_route_handler))
         .route("/maps/{server}", get(server_map_route_handler))
         .route("/worlds/{server}", get(server_world_route_handler))
-        .fallback(status_403_handler())
+        .fallback(status_403_handler(default_nav()))
 }
 
 async fn servers_route_handler(
@@ -74,7 +74,7 @@ async fn server_route_handler(
         .iter()
         .find(|server| server.identifier == identifier);
     if server.is_none() {
-        return Err(status_403_handler());
+        return Err(status_403_handler(default_nav()));
     }
 
     let server = server.unwrap();
@@ -105,7 +105,7 @@ async fn server_icon_route_handler(
     let servers = servers.clone();
     let server = servers.iter().find(|server| server.id == server_id);
     if server.is_none() {
-        return Err(status_404_handler());
+        return Err(status_404_handler(default_nav()));
     }
     let server = server.unwrap();
 
@@ -134,12 +134,12 @@ async fn server_map_route_handler(
     let servers = servers.clone();
     let server = servers.iter().find(|server| server.id == server_id);
     if server.is_none() {
-        return Err(status_404_handler());
+        return Err(status_404_handler(default_nav()));
     }
     let server = server.unwrap();
 
     if !server.map_available {
-        return Err(status_404_handler());
+        return Err(status_404_handler(default_nav()));
     }
 
     let paths = match read_dir(std_path::new(&server.path).join("./map")) {
@@ -155,7 +155,7 @@ async fn server_map_route_handler(
                     .replace("-", ":")
             })
             .collect::<Vec<_>>(),
-        Err(_) => return Err(status_404_handler()),
+        Err(_) => return Err(status_404_handler(default_nav())),
     };
 
     Ok(Json(paths))
@@ -169,7 +169,7 @@ async fn server_world_route_handler(
     let servers = servers.clone();
     let server = servers.iter().find(|server| server.id == server_id);
     if server.is_none() {
-        return Err(status_404_handler());
+        return Err(status_404_handler(default_nav()));
     }
     let server = server.unwrap();
 

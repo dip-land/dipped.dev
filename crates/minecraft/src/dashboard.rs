@@ -11,7 +11,7 @@ use axum::{
 use maud::{Markup, html};
 use std::path;
 use templates::{
-    head, main, main_section, nav,
+    default_nav, head, main, main_section,
     status::status_404_handler,
     terminal::{self, ButtonOptions, TerminalCardOptions},
     terminal_line,
@@ -30,10 +30,10 @@ pub fn router(servers: Vec<Server>) -> Router<AppState> {
                 format!("/maps/{}", server.identifier).as_str(),
                 ServeDir::new(path.join("./map")),
             )
-            .fallback(status_404_handler());
+            .fallback(status_404_handler(default_nav()));
     }
 
-    router.fallback(status_404_handler())
+    router.fallback(status_404_handler(default_nav()))
 }
 
 async fn servers_page_handler(
@@ -67,7 +67,7 @@ async fn servers_page_handler(
     main(
         vec![head::main(), head::minecraft_home()],
         vec![
-            nav(),
+            default_nav(),
             main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("bash ~/minecraft"),
@@ -92,7 +92,7 @@ async fn server_page_handler(
         .iter()
         .find(|server| server.identifier == identifier);
     if server.is_none() {
-        return status_404_handler().into_response();
+        return status_404_handler(default_nav()).into_response();
     }
     let server = server.unwrap();
 
@@ -130,7 +130,7 @@ async fn server_page_handler(
     main(
         vec![head::main(), head::minecraft_server()],
         vec![
-            nav(),
+            default_nav(),
             main_section(vec![terminal::main(
                 vec![
                     terminal::inline_group(vec![

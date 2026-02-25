@@ -7,7 +7,7 @@ use axum::{Router, http::StatusCode, routing::get};
 use maud::Markup;
 use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter, QueryOrder};
 use templates::{
-    head, main, main_section, nav,
+    default_nav, head, main, main_section,
     status::{error_500_handler, status_404_handler},
     terminal, terminal_line,
 };
@@ -16,14 +16,14 @@ pub fn router() -> Router<AppState> {
     Router::<AppState>::new()
         .route("/", get(generate_index()))
         .nest("/dashboard", dashboard::router())
-        .fallback(status_404_handler())
+        .fallback(status_404_handler(default_nav()))
 }
 
 pub fn generate_index() -> Markup {
     main(
-        vec![head::main()],
+        vec![head::role_eater()],
         vec![
-            nav(),
+            default_nav(),
             main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("bash ~/role_eater"),
@@ -68,7 +68,7 @@ pub fn generate_index() -> Markup {
                                         style: terminal::ButtonStyle::Default,
                                     }),
                                     terminal::button(terminal::ButtonOptions {
-                                        href: "https://github.com/dip-land/dipped.dev",
+                                        href: "https://github.com/dip-land/Role-Eater",
                                         external: true,
                                         content: "github ",
                                         button_number: Some(4),

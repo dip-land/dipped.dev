@@ -5,6 +5,7 @@ use futures::future::join_all;
 use std::fs::read_dir;
 use std::path::Path as std_path;
 use std::{env, path::Path, sync::Arc};
+use templates::default_nav;
 use templates::status::status_404_handler;
 use tokio::sync::Mutex;
 use tokio::{fs::File, io::AsyncReadExt};
@@ -89,7 +90,7 @@ async fn main() {
             .nest_service("/favicon.ico", favicon_service)
             .nest_service("/shared", shared_asset_service)
             .nest_service("/static", asset_service)
-            .fallback(status_404_handler())
+            .fallback(status_404_handler(default_nav()))
             .with_state(state),
     );
 
@@ -282,39 +283,21 @@ pub async fn get_server_stats(id: String) -> structs::McssServerStats {
 fn debug_fn() {
     use glob::glob;
     use grass;
-    use std::fs;
+    use std::{fs, path::PathBuf};
 
-    for entry in glob(format!("{}/**/*.scss", var("SHARED_ASSETS_PATH").unwrap()).as_str())
-        .expect("Failed to read glob pattern")
-    {
-        if entry.is_err() {
-            continue;
-        }
-        let path = entry.unwrap();
+    let shared_assets = glob(format!("{}/**/*.scss", var("SHARED_ASSETS_PATH").unwrap()).as_str())
+        .unwrap()
+        .filter_map(Result::ok);
+    let assets = glob(format!("{}/**/*.scss", var("MINECRAFT_ASSETS_PATH").unwrap()).as_str())
+        .unwrap()
+        .filter_map(Result::ok);
 
-        let scss = fs::read_to_string(&path).unwrap();
-        match grass::from_string(scss, &grass::Options::default()) {
-            Ok(css) => {
-                let path = path.to_str().unwrap().replace(".scss", ".css");
-                match fs::write(&path, css) {
-                    Ok(_) => {
-                        println!("Wrote File {:?}", path);
-                    }
-                    Err(e) => println!("{:?}", e),
-                }
-            }
-            Err(e) => println!("{:?} {:?}", &path, e),
-        }
-    }
+    let shared_assets: Vec<PathBuf> = shared_assets.collect();
+    let assets: Vec<PathBuf> = assets.collect();
 
-    for entry in glob(format!("{}/**/*.scss", var("MINECRAFT_ASSETS_PATH").unwrap()).as_str())
-        .expect("Failed to read glob pattern")
-    {
-        if entry.is_err() {
-            continue;
-        }
-        let path = entry.unwrap();
+    let all_assets = [&shared_assets[..], &assets[..]].concat();
 
+    for path in all_assets {
         let scss = fs::read_to_string(&path).unwrap();
         match grass::from_string(scss, &grass::Options::default()) {
             Ok(css) => {

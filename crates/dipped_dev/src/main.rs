@@ -3,7 +3,7 @@ use dotenvy::{dotenv, var};
 use maud::Markup;
 use std::{env, path::Path};
 use templates::{
-    head, main as template_main, main_section, nav, status::status_404_handler, terminal,
+    default_nav, head, main as template_main, main_section, status::status_404_handler, terminal,
     terminal_line,
 };
 use tower::layer::Layer;
@@ -49,7 +49,7 @@ async fn main() {
                 .nest_service("/shared", shared_asset_service)
                 .nest_service("/static", asset_service)
                 .nest_service("/static/vault", vault_service)
-                .fallback(status_404_handler()),
+                .fallback(status_404_handler(default_nav())),
         );
 
     let address: String = format!("127.0.0.1:{}", port);
@@ -64,7 +64,7 @@ pub fn generate_index() -> Markup {
     template_main(
         vec![head::main()],
         vec![
-            nav(),
+            default_nav(),
             main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("bash ~/startup.sh"),
@@ -102,8 +102,8 @@ pub fn generate_index() -> Markup {
                                         style: terminal::ButtonStyle::Default,
                                     }),
                                     terminal::button(terminal::ButtonOptions {
-                                        href: "/role-eater",
-                                        external: false,
+                                        href: "https://re.dipped.dev",
+                                        external: true,
                                         content: "role_eater ",
                                         button_number: Some(3),
                                         disabled: false,
@@ -111,8 +111,8 @@ pub fn generate_index() -> Markup {
                                         style: terminal::ButtonStyle::Default,
                                     }),
                                     terminal::button(terminal::ButtonOptions {
-                                        href: "/minecraft",
-                                        external: false,
+                                        href: "https://minecraft.dipped.dev",
+                                        external: true,
                                         content: "minecraft ",
                                         button_number: Some(4),
                                         disabled: false,
@@ -147,39 +147,21 @@ pub fn generate_index() -> Markup {
 fn debug_fn() {
     use glob::glob;
     use grass;
-    use std::fs;
+    use std::{fs, path::PathBuf};
 
-    for entry in glob(format!("{}/**/*.scss", var("SHARED_ASSETS_PATH").unwrap()).as_str())
-        .expect("Failed to read glob pattern")
-    {
-        if entry.is_err() {
-            continue;
-        }
-        let path = entry.unwrap();
+    let shared_assets = glob(format!("{}/**/*.scss", var("SHARED_ASSETS_PATH").unwrap()).as_str())
+        .unwrap()
+        .filter_map(Result::ok);
+    let assets = glob(format!("{}/**/*.scss", var("MAIN_ASSETS_PATH").unwrap()).as_str())
+        .unwrap()
+        .filter_map(Result::ok);
 
-        let scss = fs::read_to_string(&path).unwrap();
-        match grass::from_string(scss, &grass::Options::default()) {
-            Ok(css) => {
-                let path = path.to_str().unwrap().replace(".scss", ".css");
-                match fs::write(&path, css) {
-                    Ok(_) => {
-                        println!("Wrote File {:?}", path);
-                    }
-                    Err(e) => println!("{:?}", e),
-                }
-            }
-            Err(e) => println!("{:?} {:?}", &path, e),
-        }
-    }
+    let shared_assets: Vec<PathBuf> = shared_assets.collect();
+    let assets: Vec<PathBuf> = assets.collect();
 
-    for entry in glob(format!("{}/**/*.scss", var("MAIN_ASSETS_PATH").unwrap()).as_str())
-        .expect("Failed to read glob pattern")
-    {
-        if entry.is_err() {
-            continue;
-        }
-        let path = entry.unwrap();
+    let all_assets = [&shared_assets[..], &assets[..]].concat();
 
+    for path in all_assets {
         let scss = fs::read_to_string(&path).unwrap();
         match grass::from_string(scss, &grass::Options::default()) {
             Ok(css) => {

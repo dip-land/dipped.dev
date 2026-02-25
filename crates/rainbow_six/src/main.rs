@@ -3,7 +3,7 @@ use dotenvy::{dotenv, var};
 use maud::{Markup, html};
 use std::{env, path::Path};
 use templates::{
-    head, main as template_main, main_section, nav as r6_nav,
+    head, main as template_main, main_section, rainbow_six_nav,
     status::status_404_handler,
     terminal::{self, ButtonOptions},
     terminal_line,
@@ -45,12 +45,14 @@ async fn main() {
 
     let app = NormalizePathLayer::trim_trailing_slash().layer(
         Router::new()
-            .route("/", get(generate_index()))
+            .route("/", get(index()))
+            .route("/random", get(random()))
+            .route("/ffa", get(ffa()))
             .nest_service("/favicon.ico", favicon_service)
             .nest_service("/shared", shared_asset_service)
             .nest_service("/static", asset_service)
             .nest_service("/static/vault", vault_service)
-            .fallback(status_404_handler()),
+            .fallback(status_404_handler(rainbow_six_nav())),
     );
 
     let address = format!("127.0.0.1:{}", port);
@@ -61,11 +63,11 @@ async fn main() {
         .unwrap();
 }
 
-pub fn generate_index() -> Markup {
+pub fn index() -> Markup {
     template_main(
         vec![head::r6_main()],
         vec![
-            r6_nav(),
+            rainbow_six_nav(),
             html! {
                 template id="operator_template" {
                     div class="operator" {
@@ -122,43 +124,143 @@ pub fn generate_index() -> Markup {
     )
 }
 
+pub fn random() -> Markup {
+    template_main(
+        vec![head::r6_random()],
+        vec![
+            rainbow_six_nav(),
+            html! {
+                template id="operator_template" {
+                    div class="operator" {
+                        img {}
+                        span {}
+                    }
+                }
+            },
+            main_section(vec![terminal::main(
+                vec![
+                    terminal::group(
+                        vec![terminal::inline_group(vec![
+                            terminal::button(ButtonOptions {
+                                href: "random_any",
+                                external: false,
+                                content: "Random Operator",
+                                button_number: None,
+                                disabled: false,
+                                inline: true,
+                                style: terminal::ButtonStyle::Default,
+                            }),
+                            terminal::button(ButtonOptions {
+                                href: "random_attacker",
+                                external: false,
+                                content: "Random Attacker",
+                                button_number: None,
+                                disabled: false,
+                                inline: true,
+                                style: terminal::ButtonStyle::Default,
+                            }),
+                            terminal::button(ButtonOptions {
+                                href: "random_defender",
+                                external: false,
+                                content: "Random Defender",
+                                button_number: None,
+                                disabled: false,
+                                inline: true,
+                                style: terminal::ButtonStyle::Default,
+                            }),
+                        ])],
+                        false,
+                        "",
+                    ),
+                    terminal::divider("YOUR RANDOM OPERATOR"),
+                    html! {
+                        div id="selected_operator" {
+                            img {}
+                            span {}
+                        }
+                    },
+                ],
+                terminal::TerminalType::Normal,
+            )]),
+        ],
+    )
+}
+
+pub fn ffa() -> Markup {
+    template_main(
+        vec![head::r6_ffa()],
+        vec![
+            rainbow_six_nav(),
+            html! {
+                template id="operator_template" {
+                    div class="operator" {
+                        img {}
+                        span {}
+                    }
+                }
+            },
+            main_section(vec![terminal::main(
+                vec![
+                    terminal_line::header("Select the operators you own"),
+                    terminal_line::blank(),
+                    terminal::group(
+                        vec![terminal::inline_group(vec![
+                            terminal::button(ButtonOptions {
+                                href: "random_any",
+                                external: false,
+                                content: "Random Operator",
+                                button_number: None,
+                                disabled: false,
+                                inline: true,
+                                style: terminal::ButtonStyle::Default,
+                            }),
+                            terminal::button(ButtonOptions {
+                                href: "random_auto",
+                                external: false,
+                                content: "Auto Randomize",
+                                button_number: None,
+                                disabled: false,
+                                inline: true,
+                                style: terminal::ButtonStyle::Default,
+                            }),
+                        ])],
+                        false,
+                        "",
+                    ),
+                    terminal::divider("YOUR RANDOM OPERATOR"),
+                    html! {
+                        div id="selected_operator" {
+                            span id="op_type" {}
+                            img {}
+                            span id="op_name" {}
+                        }
+                    },
+                ],
+                terminal::TerminalType::Normal,
+            )]),
+        ],
+    )
+}
+
 #[cfg(debug_assertions)]
 fn debug_fn() {
     use glob::glob;
     use grass;
-    use std::fs;
+    use std::{fs, path::PathBuf};
 
-    for entry in glob(format!("{}/**/*.scss", var("SHARED_ASSETS_PATH").unwrap()).as_str())
-        .expect("Failed to read glob pattern")
-    {
-        if entry.is_err() {
-            continue;
-        }
-        let path = entry.unwrap();
+    let shared_assets = glob(format!("{}/**/*.scss", var("SHARED_ASSETS_PATH").unwrap()).as_str())
+        .unwrap()
+        .filter_map(Result::ok);
+    let assets = glob(format!("{}/**/*.scss", var("R6_ASSETS_PATH").unwrap()).as_str())
+        .unwrap()
+        .filter_map(Result::ok);
 
-        let scss = fs::read_to_string(&path).unwrap();
-        match grass::from_string(scss, &grass::Options::default()) {
-            Ok(css) => {
-                let path = path.to_str().unwrap().replace(".scss", ".css");
-                match fs::write(&path, css) {
-                    Ok(_) => {
-                        println!("Wrote File {:?}", path);
-                    }
-                    Err(e) => println!("{:?}", e),
-                }
-            }
-            Err(e) => println!("{:?} {:?}", &path, e),
-        }
-    }
+    let shared_assets: Vec<PathBuf> = shared_assets.collect();
+    let assets: Vec<PathBuf> = assets.collect();
 
-    for entry in glob(format!("{}/**/*.scss", var("R6_ASSETS_PATH").unwrap()).as_str())
-        .expect("Failed to read glob pattern")
-    {
-        if entry.is_err() {
-            continue;
-        }
-        let path = entry.unwrap();
+    let all_assets = [&shared_assets[..], &assets[..]].concat();
 
+    for path in all_assets {
         let scss = fs::read_to_string(&path).unwrap();
         match grass::from_string(scss, &grass::Options::default()) {
             Ok(css) => {

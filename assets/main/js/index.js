@@ -1,17 +1,11 @@
 window.addEventListener('load', async () => {
     let nav_home_link = document.getElementById('nav_home_link');
     let nav_projects_link = document.getElementById('nav_projects_link');
-    let nav_role_eater_link = document.getElementById('nav_role_eater_link');
-    let nav_minecraft_link = document.getElementById('nav_minecraft_link');
 
     if (nav_home_link && location.pathname === '/') {
         nav_home_link.classList.add('active');
     } else if (nav_projects_link && location.pathname.includes('projects')) {
         nav_projects_link.classList.add('active');
-    } else if (nav_role_eater_link && location.pathname.includes('role-eater')) {
-        nav_role_eater_link.classList.add('active');
-    } else if (nav_minecraft_link && location.pathname.includes('minecraft')) {
-        nav_minecraft_link.classList.add('active');
     }
 
     let buttons = document.getElementsByClassName('terminal_button');

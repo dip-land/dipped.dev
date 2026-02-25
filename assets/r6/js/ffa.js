@@ -341,6 +341,8 @@ window.addEventListener('load', async () => {
         })
     }
 
+    let selected_element = document.getElementById("selected_operator");
+
     function set_selected(name) {
         let selected = attackers.find((v) => v.name === name);
         if (selected) {

@@ -7,7 +7,7 @@ use axum::{
 use maud::{Markup, html};
 use num_format::{Locale, ToFormattedString};
 use templates::{
-    head, main, main_section, nav,
+    default_nav, head, main, main_section,
     status::status_404_handler,
     terminal::{self, ButtonOptions},
     terminal_line,
@@ -52,14 +52,14 @@ pub fn router() -> Router<AppState> {
                 None,
             )),
         )
-        .fallback(status_404_handler())
+        .fallback(status_404_handler(default_nav()))
 }
 
 pub fn generate_index() -> Markup {
     main(
-        vec![head::main(), head::role_eater_dashboard()],
+        vec![head::role_eater(), head::role_eater_dashboard()],
         vec![
-            nav(),
+            default_nav(),
             main_section(vec![terminal::main(
                 vec![
                     terminal_line::command("bash ~/role_eater/dashboard"),
@@ -81,7 +81,7 @@ async fn guild_page(
 ) -> Result<Markup, (StatusCode, Markup)> {
     let guild = guild_handler(state, guild_id)
         .await
-        .map_err(|_| status_404_handler())?;
+        .map_err(|_| status_404_handler(default_nav()))?;
 
     let mut main_group: Vec<Markup> = Vec::new();
     if guild.icon.to_owned().is_some() {
@@ -155,9 +155,9 @@ async fn guild_page(
     }
 
     Ok(main(
-        vec![head::main(), head::role_eater_guild()],
+        vec![head::role_eater(), head::role_eater_guild()],
         vec![
-            nav(),
+            default_nav(),
             main_section(vec![terminal::main(
                 vec![
                     terminal::inline_group(main_group),

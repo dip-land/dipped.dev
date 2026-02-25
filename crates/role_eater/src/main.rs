@@ -1,17 +1,16 @@
 use axum::{Router, ServiceExt, extract::Request};
 use dotenvy::{dotenv, var};
 use sea_orm::{Database, DatabaseConnection, DbErr};
-use std::path::PathBuf;
 use std::sync::Arc;
 use std::{env, path::Path};
+use templates::default_nav;
+use templates::status::status_404_handler;
 use tokio::sync::Mutex;
 use tower::layer::Layer;
 use tower_http::{
     normalize_path::NormalizePathLayer,
     services::{ServeDir, ServeFile},
 };
-
-use templates::status::status_404_handler;
 
 pub mod api;
 pub mod dashboard;
@@ -65,7 +64,7 @@ async fn main() {
             .nest_service("/favicon.ico", favicon_service)
             .nest_service("/shared", shared_asset_service)
             .nest_service("/static", asset_service)
-            .fallback(status_404_handler())
+            .fallback(status_404_handler(default_nav()))
             .with_state(state),
     );
 
@@ -89,7 +88,7 @@ pub async fn check_db(app_state: AppState) -> Result<DatabaseConnection, DbErr> 
 fn debug_fn() {
     use glob::glob;
     use grass;
-    use std::fs;
+    use std::{fs, path::PathBuf};
 
     let shared_assets = glob(format!("{}/**/*.scss", var("SHARED_ASSETS_PATH").unwrap()).as_str())
         .unwrap()
@@ -98,8 +97,8 @@ fn debug_fn() {
         .unwrap()
         .filter_map(Result::ok);
 
-    let shared_assets: Vec<PathBuf> = shared_assets.map(|v| v).collect();
-    let assets: Vec<PathBuf> = assets.map(|v| v).collect();
+    let shared_assets: Vec<PathBuf> = shared_assets.collect();
+    let assets: Vec<PathBuf> = assets.collect();
 
     let all_assets = [&shared_assets[..], &assets[..]].concat();
 
