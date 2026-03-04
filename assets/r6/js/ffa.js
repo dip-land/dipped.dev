@@ -152,6 +152,10 @@ let attackers = [
     {
         "name": "Rauora",
         "image_src": "/static/media/images/rauora.png"
+    },
+    {
+        "name": "Solid Snake",
+        "image_src": "/static/media/images/solid_snake.png"
     }
 ];
 let defenders = [

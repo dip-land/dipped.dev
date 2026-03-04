@@ -152,6 +152,10 @@ let all_operators = [
         "image_src": "/static/media/images/rauora.png"
     },
     {
+        "name": "Solid Snake",
+        "image_src": "/static/media/images/solid_snake.png"
+    },
+    {
         "name": "Sentry",
         "image_src": "/static/media/images/sentry.png"
     },
