@@ -4,7 +4,7 @@ use crate::{
 };
 use axum::{
     Json, Router,
-    body::{self, Body},
+    body::Body,
     extract::{Path, Query, State},
     http::{Response, StatusCode, header},
     response::{Html, IntoResponse},
@@ -17,12 +17,6 @@ use templates::default_nav;
 use templates::status::{error_404_handler, status_403_handler, status_404_handler};
 use tokio::fs::File;
 use tokio_util::io::ReaderStream;
-// use crate::{
-//     McssServer, McssServerBackupHistory, McssServerBackupTemplate, McssServerBackups,
-//     McssServerConfig, McssServerStats, McssServerStatsLatest, McssServerTaskJob,
-//     McssServerTaskTiming, McssServerTasks, Server, ServerData, ServerDates, ServerFilterOptions,
-//     ServerOnlineStatus, ServerSortOptions, ServerStatus, SortingOptions, WebConfig, WebConfigPack,
-// };
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -113,7 +107,7 @@ async fn server_icon_route_handler(
     let file = File::open(path).await.map_err(error_404_handler)?;
 
     let stream = ReaderStream::new(file);
-    let body = body::Body::from_stream(stream);
+    let body = Body::from_stream(stream);
 
     Ok(Response::builder()
         .header(header::CONTENT_TYPE, "image/png")
@@ -177,7 +171,7 @@ async fn server_world_route_handler(
     let file = File::open(path).await.map_err(error_404_handler)?;
 
     let stream = ReaderStream::new(file);
-    let body = body::Body::from_stream(stream);
+    let body = Body::from_stream(stream);
 
     Ok(Response::builder()
         .header(header::CONTENT_TYPE, "application/zip")

@@ -176,7 +176,7 @@ pub struct McssServerBackupTemplate {
     pub folder_blacklist: Vec<String>,
 }
 
-// This is probably not the correct layout of a backup but its better than nothing
+// This is probably not the correct layout of a backup, but it's better than nothing
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct McssServerBackupHistory {

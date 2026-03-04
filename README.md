@@ -19,25 +19,25 @@ cd dipped.dev
 Create a .env file and populate it with the contents from .env.example
 
 Running dipped.dev
-Port is is an optional argument
+Port is an optional argument
 ```powershell
 cargo run --bin dipped_dev -- --port 6570
 ```
 
 Running minecraft.dipped.dev
-Port is is an optional argument
+Port is an optional argument
 ```powershell
 cargo run --bin minecraft -- --port 6571
 ```
 
 Running re.dipped.dev
-Port is is an optional argument
+Port is an optional argument
 ```powershell
 cargo run --bin role_eater -- --port 6572
 ```
 
 Running r6.dipped.dev
-Port is is an optional argument
+Port is an optional argument
 ```powershell
 cargo run --bin rainbow_six -- --port 6573
 ```
@@ -71,4 +71,4 @@ Building All
 cargo build --bins --release
 ```
 
-Then put a .env file in the same directory as the executable and then you can run the executable.
+Then put a .env file in the same directory as the executable, and then you can run the executable.
