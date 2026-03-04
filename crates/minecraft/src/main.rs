@@ -105,19 +105,16 @@ async fn main() {
 pub async fn get_servers() -> Vec<structs::Server> {
     let client = reqwest::Client::new();
     let res = client
-        .get(format!("http://{}/api/v2/servers", var("MCSS_IP").unwrap(),))
+        .get(format!("{}/api/v2/servers", var("MCSS_URL").unwrap(),))
         .header("apiKey", var("MCSS_KEY").unwrap())
         .send()
         .await
         .unwrap();
 
-    let mcss_servers = match res.json::<Vec<structs::McssServer>>().await {
-        Ok(v) => v,
-        Err(err) => {
-            println!("{:?}", err);
-            Vec::new()
-        }
-    };
+    let mcss_servers = res.json::<Vec<structs::McssServer>>().await.unwrap_or_else(|err| {
+        println!("{:?}", err);
+        Vec::new()
+    });
 
     let mut parsed_servers: Vec<structs::Server> = Vec::new();
     for server in mcss_servers {
@@ -268,8 +265,8 @@ pub async fn get_server_stats(id: String) -> structs::McssServerStats {
     let client = reqwest::Client::new();
     let res = client
         .get(format!(
-            "http://{}/api/v2/servers/{}/stats",
-            var("MCSS_IP").unwrap(),
+            "{}/api/v2/servers/{}/stats",
+            var("MCSS_URL").unwrap(),
             id
         ))
         .header("apiKey", var("MCSS_KEY").unwrap())
