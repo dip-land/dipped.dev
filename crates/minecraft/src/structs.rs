@@ -131,7 +131,7 @@ pub struct McssServerTask {
     pub guid: String,
     pub name: String,
     pub player_requirement: String,
-    pub timing: McssServerTaskTiming,
+    pub timing: Option<McssServerTaskTiming>,
     pub job: Option<McssServerTaskJob>,
     pub jobs: Vec<McssServerTaskJob>,
 }
